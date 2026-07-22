@@ -2,15 +2,20 @@
    The login page (body#body-login) has no [data-theme-*] attribute, so the token
    overrides in inzicht-tokens.css don't reach it — and it follows the visitor's
    system scheme (prefers-color-scheme), NOT a stored theme. So we theme it in two
-   passes: light by default, dark under the media query. Scoped to #body-login
-   (specificity 1,0,0) so it beats NC's body-level scheme rules regardless of order.
+   passes: light by default, dark under the media query.
 
-   NOTE: the 'custom' app overrides --image-background on body#body-login to show an
-   uploaded login image; we deliberately do NOT force background-image here so that
-   app keeps working. With no custom image, --color-background-plain shows. */
+   Selector is body#body-login (specificity 1,0,1) and this theme CSS loads LAST,
+   so it reliably wins over: Nextcloud's default background image on :root
+   (the blue "fluid" blobs), the Theming admin panel, and the 'custom' login-image
+   app. We set --image-background to the In Zicht gradient so the login backdrop
+   matches the app dashboards on every install.
+
+   NOTE: this supersedes the 'custom' app's login background image. If you want that
+   app to control the login background instead, remove the two --image-background
+   lines below. */
 
 /* --- Login: LIGHT (default) --- */
-#body-login {
+body#body-login {
 	--color-primary: oklch(0.25 0.08 290);
 	--color-primary-text: oklch(0.98 0.003 290);
 	--color-primary-hover: oklch(0.30 0.08 295);
@@ -31,6 +36,10 @@
 	--color-background-plain: oklch(0.985 0.003 330);
 	--color-background-plain-text: oklch(0.18 0.03 280);
 
+	/* Themed backdrop — light-pink hero gradient (matches the app) */
+	--image-background: linear-gradient(135deg, oklch(0.96 0.03 330), oklch(0.985 0.003 330));
+	--image-background-default: linear-gradient(135deg, oklch(0.96 0.03 330), oklch(0.985 0.003 330));
+
 	--border-radius: 8px;
 	--border-radius-element: 8px;
 	--border-radius-large: 10px;
@@ -41,7 +50,7 @@
 
 /* --- Login: DARK (visitor's OS is in dark mode) --- */
 @media (prefers-color-scheme: dark) {
-	#body-login {
+	body#body-login {
 		--color-primary: oklch(0.14 0.04 280);
 		--color-primary-text: oklch(0.93 0.01 280);
 		--color-primary-hover: oklch(0.22 0.05 285);
@@ -61,5 +70,9 @@
 
 		--color-background-plain: oklch(0.16 0.02 280);
 		--color-background-plain-text: oklch(0.93 0.01 280);
+
+		/* Themed backdrop — dark pink -> navy gradient (matches the app) */
+		--image-background: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
+		--image-background-default: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
 	}
 }
