@@ -1,14 +1,48 @@
-/* In Zicht theme — entry point. @import rules MUST come first (CSS spec). */
-@import url('./inzicht-fonts.css');
-@import url('./inzicht-tokens.css');
-@import url('./inzicht-components.css');
-@import url('./inzicht-motion.css');
-@import url('./inzicht-login.css');
+/* ============================================================================
+   In Zicht theme for Nextcloud 34 — single-file stylesheet.
 
+   Everything lives in THIS ONE FILE (fonts, tokens, components, motion, login)
+   on purpose: Nextcloud adds a ?v= cache-buster to the <link> for server.css,
+   but @import'ed partials are fetched WITHOUT that query, so browsers cache them
+   for months and updates never show. Keeping it single-file means every deploy
+   is picked up. Do NOT re-split into @import partials.
+
+   NC's CSSResourceLocator appends this file after core CSS on every page, so the
+   :root / [data-theme-*] overrides below win by cascade order at equal specificity.
+
+   Sections, in order:
+     1. Fonts (@font-face, self-hosted)
+     2. Font wiring (--font-face + headings)
+     3. Palette tokens (light / dark / follow-system) + radii
+     4. Components (buttons, inputs, cards, badges, settings header fix)
+     5. Motion
+     6. Header logo sizing
+     7. Login page (handles its own light/dark scheme)
+   ============================================================================ */
+
+
+/* ===== 1. Self-hosted fonts — CSP-safe (served same-origin from the theme) ===== */
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('../fonts/Inter.woff2') format('truetype');
+}
+@font-face {
+	font-family: 'Space Grotesk';
+	font-style: normal;
+	font-weight: 300 700;
+	font-display: swap;
+	src: url('../fonts/SpaceGrotesk.woff2') format('woff2');
+}
+
+
+/* ===== 2. Font wiring ===== */
 /* Body font (Inter) — override NC's --font-face. NC injects it dynamically as
    [data-theme-<id>] { … } which loads AFTER this file, so we use the double
    attribute [data-themes][data-theme-<id>] (specificity 0,2,0) to win regardless
-   of source order. The same pattern is used for color tokens (see inzicht-tokens.css). */
+   of source order. The same pattern is used for the color tokens below. */
 [data-themes][data-theme-default],
 [data-themes][data-theme-light],
 [data-themes][data-theme-dark],
@@ -27,9 +61,237 @@ h1, h2, h3, h4, h5, h6 {
 	font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
 }
 
-/* Header logo — the In Zicht lockup is a wide horizontal mark (~3.24:1).
-   NC's logo link is 62px wide with overflow:hidden, so widen the link itself
-   and the logo box, and left-align the mark, so the whole wordmark reads. */
+
+/* ===== 3. Palette — LIGHT (newstyle :root, verbatim OKLCH) =====
+   Uses [data-themes][data-theme-<id>] (specificity 0,2,0) so it beats both NC's
+   :root default-theme vars and its single-attribute [data-theme-<id>] rules,
+   regardless of source order. High-contrast themes are intentionally left
+   untouched to preserve their accessibility. */
+[data-themes][data-theme-default],
+[data-themes][data-theme-light] {
+	/* Backgrounds & text — content/cards are white (newstyle --card: oklch(1 0 0)) */
+	--color-main-background: oklch(1 0 0);
+	--color-main-background-rgb: 255, 255, 255;
+	--color-main-background-translucent: oklch(1 0 0 / 0.9);
+	--color-main-text: oklch(0.18 0.03 280);
+	--color-text-maxcontrast: oklch(0.50 0.04 280);
+	--color-background-hover: oklch(0.975 0.004 330);
+	--color-background-dark: oklch(0.96 0.008 330);
+	--color-background-darker: oklch(0.94 0.02 330);
+
+	/* Primary (navy) — header/branding */
+	--color-primary: oklch(0.25 0.08 290);
+	--color-primary-text: oklch(0.98 0.003 290);
+	--color-primary-hover: oklch(0.30 0.08 295);
+	--color-primary-light: oklch(0.96 0.01 330);
+	--color-primary-light-text: oklch(0.25 0.08 290);
+
+	/* Page backdrop (dashboard/login) — light pink hero gradient, navy text */
+	--color-background-plain: oklch(0.985 0.003 330);
+	--color-background-plain-text: oklch(0.18 0.03 280);
+	--image-background: linear-gradient(135deg, oklch(0.96 0.03 330), oklch(0.985 0.003 330));
+	--image-background-default: linear-gradient(135deg, oklch(0.96 0.03 330), oklch(0.985 0.003 330));
+
+	/* Primary element (pink accent) — buttons/links/active */
+	--color-primary-element: oklch(0.60 0.19 330);
+	--color-primary-element-hover: oklch(0.55 0.19 330);
+	--color-primary-element-text: oklch(0.98 0.003 330);
+	--color-primary-element-light: oklch(0.94 0.02 330);
+	--color-primary-element-light-hover: oklch(0.90 0.03 330);
+	--color-primary-element-light-text: oklch(0.38 0.12 330);
+
+	/* Borders */
+	--color-border: oklch(0.92 0.012 330);
+	--color-border-dark: oklch(0.88 0.015 330);
+
+	/* Status */
+	--color-error: oklch(0.577 0.245 27.325);
+	--color-error-rgb: 231, 0, 11;
+	--color-warning: oklch(0.85 0.10 85);
+	--color-warning-rgb: 236, 201, 128;
+	--color-favorite: oklch(0.60 0.19 330);
+}
+
+/* Radii — shared across all themes.
+   newstyle --radius: 0.625rem (10px): rounded-sm 6 / rounded-md 8 / rounded-lg 10
+   / rounded-xl 14 / rounded-2xl 18. Buttons & inputs use rounded-md (8px);
+   cards use rounded-xl (14px). */
+[data-themes][data-theme-default],
+[data-themes][data-theme-light],
+[data-themes][data-theme-dark] {
+	--border-radius: 8px;
+	--border-radius-small: 6px;
+	--border-radius-large: 10px;
+	--border-radius-element: 8px;
+	--border-radius-container: 14px;
+	--border-radius-container-large: 18px;
+	--border-radius-pill: 9999px;
+	--border-radius-rounded: 9999px;
+}
+
+/* Palette — DARK (newstyle .dark, verbatim OKLCH). Explicit dark theme only;
+   high-contrast dark is left untouched. */
+[data-themes][data-theme-dark] {
+	/* content/cards are the elevated surface (newstyle .dark --card: oklch(0.20 0.025 280)) */
+	--color-main-background: oklch(0.20 0.025 280);
+	--color-main-background-rgb: 20, 21, 33;
+	--color-main-background-translucent: oklch(0.20 0.025 280 / 0.9);
+	--color-main-text: oklch(0.93 0.01 280);
+	--color-text-maxcontrast: oklch(0.65 0.03 280);
+	--color-background-hover: oklch(0.18 0.02 280);
+	--color-background-dark: oklch(0.24 0.02 280);
+	--color-background-darker: oklch(0.28 0.03 280);
+
+	--color-primary: oklch(0.14 0.04 280);
+	--color-primary-text: oklch(0.93 0.01 280);
+	--color-primary-hover: oklch(0.22 0.05 285);
+
+	--color-background-plain: oklch(0.16 0.02 280);
+	--color-background-plain-text: oklch(0.93 0.01 280);
+	--image-background: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
+	--image-background-default: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
+
+	--color-primary-element: oklch(0.65 0.20 330);
+	--color-primary-element-hover: oklch(0.60 0.20 330);
+	--color-primary-element-text: oklch(0.98 0.003 330);
+	--color-primary-element-light: oklch(0.24 0.06 330);
+	--color-primary-element-light-hover: oklch(0.28 0.06 330);
+	--color-primary-element-light-text: oklch(0.75 0.12 330);
+
+	--color-border: oklch(0.28 0.02 280);
+	--color-border-dark: oklch(0.32 0.02 280);
+
+	--color-error: oklch(0.55 0.22 27);
+	--color-favorite: oklch(0.65 0.20 330);
+}
+
+/* Default theme follows the OS: NC's "Default" means "follow system". When the
+   visitor's OS is dark, apply the dark palette to [data-theme-default] too.
+   KEEP IN SYNC with the [data-theme-dark] block above. */
+@media (prefers-color-scheme: dark) {
+	[data-themes][data-theme-default] {
+		--color-main-background: oklch(0.20 0.025 280);
+		--color-main-background-rgb: 20, 21, 33;
+		--color-main-background-translucent: oklch(0.20 0.025 280 / 0.9);
+		--color-main-text: oklch(0.93 0.01 280);
+		--color-text-maxcontrast: oklch(0.65 0.03 280);
+		--color-background-hover: oklch(0.18 0.02 280);
+		--color-background-dark: oklch(0.24 0.02 280);
+		--color-background-darker: oklch(0.28 0.03 280);
+
+		--color-primary: oklch(0.14 0.04 280);
+		--color-primary-text: oklch(0.93 0.01 280);
+		--color-primary-hover: oklch(0.22 0.05 285);
+
+		--color-background-plain: oklch(0.16 0.02 280);
+		--color-background-plain-text: oklch(0.93 0.01 280);
+		--image-background: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
+		--image-background-default: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
+
+		--color-primary-element: oklch(0.65 0.20 330);
+		--color-primary-element-hover: oklch(0.60 0.20 330);
+		--color-primary-element-text: oklch(0.98 0.003 330);
+		--color-primary-element-light: oklch(0.24 0.06 330);
+		--color-primary-element-light-hover: oklch(0.28 0.06 330);
+		--color-primary-element-light-text: oklch(0.75 0.12 330);
+
+		--color-border: oklch(0.28 0.02 280);
+		--color-border-dark: oklch(0.32 0.02 280);
+
+		--color-error: oklch(0.55 0.22 27);
+		--color-favorite: oklch(0.65 0.20 330);
+	}
+}
+
+
+/* ===== 4. Components ===== */
+/* Buttons — newstyle transition + primary-action hover lift */
+.button-vue,
+button.primary,
+input[type='submit'],
+input[type='button'] {
+	transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.button-vue--vue-primary:hover,
+button.primary:hover {
+	box-shadow: 0 10px 40px -12px oklch(0.60 0.19 330 / 0.2); /* newstyle --shadow-accent */
+	transform: translateY(-2px); /* newstyle hover:-translate-y-0.5 */
+}
+
+/* Inputs — pink focus ring (newstyle focus-visible:ring) */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='submit']):not([type='button']):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--color-main-background), 0 0 0 4px var(--color-primary-element);
+	border-color: var(--color-primary-element);
+}
+
+/* Cards / list panels — newstyle rounded-xl + soft shadow + hover lift */
+.app-content-list-item,
+.dashboard-panel,
+.notecard,
+.section > .personal-settings-setting-box {
+	border-radius: var(--border-radius-container);
+	transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.app-content-list-item:hover,
+.dashboard-panel:hover {
+	transform: translateY(-4px); /* newstyle .card-hover:hover */
+	box-shadow: 0 12px 32px -8px oklch(0.60 0.19 330 / 0.15),
+		0 4px 12px -4px oklch(0 0 0 / 0.08);
+}
+
+/* Badges / counter bubbles — newstyle soft-pink tag */
+.counter-bubble__counter,
+.app-navigation-entry__counter {
+	background-color: oklch(0.94 0.02 330);
+	color: oklch(0.38 0.12 330);
+	border-radius: var(--border-radius-pill);
+}
+
+/* Settings: Nextcloud 34's nav collapse toggle (.app-navigation-toggle) sits at
+   the top-left of the content column and overlaps the first section's header
+   (a stock NC quirk, present without this theme too). Add top clearance so the
+   settings section headers drop below the toggle. */
+#body-settings #app-content {
+	padding-top: 24px;
+	box-sizing: border-box;
+}
+
+
+/* ===== 5. Motion ===== */
+@keyframes inzichtPageEnter {
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes inzichtFadeSlideUp {
+	from { opacity: 0; transform: translateY(24px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Page transition on app content */
+#app-content,
+#app-content-vue,
+#content-vue main,
+main {
+	animation: inzichtPageEnter 0.4s ease-out;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	#app-content,
+	#app-content-vue,
+	#content-vue main,
+	main { animation: none; }
+}
+
+
+/* ===== 6. Header logo =====
+   The In Zicht lockup is a wide horizontal mark (~3.24:1). NC's logo link is 62px
+   wide with overflow:hidden, so widen the link itself and the logo box, and
+   left-align the mark, so the whole wordmark reads. */
 #header #nextcloud {
 	width: 176px;
 	padding-inline-start: 0;
@@ -39,4 +301,83 @@ h1, h2, h3, h4, h5, h6 {
 	width: 100%;
 	background-position: left center;
 	background-size: contain;
+}
+
+
+/* ===== 7. Login page =====
+   The login page (body#body-login) has no [data-theme-*] attribute, so the token
+   overrides above don't reach it — and it follows the visitor's system scheme
+   (prefers-color-scheme), NOT a stored theme. So we theme it in two passes: light
+   by default, dark under the media query.
+
+   Selector is body#body-login (specificity 1,0,1) and this theme CSS loads LAST,
+   so it reliably wins over: Nextcloud's default background image on :root (the blue
+   "fluid" blobs), the Theming admin panel, and the 'custom' login-image app. We set
+   --image-background to the In Zicht gradient so the login backdrop matches the app.
+
+   NOTE: this supersedes the 'custom' app's login background image. If you want that
+   app to control the login background instead, remove the two --image-background
+   lines in each block below. */
+
+/* --- Login: LIGHT (default) --- */
+body#body-login {
+	--color-primary: oklch(0.25 0.08 290);
+	--color-primary-text: oklch(0.98 0.003 290);
+	--color-primary-hover: oklch(0.30 0.08 295);
+
+	--color-primary-element: oklch(0.60 0.19 330);
+	--color-primary-element-hover: oklch(0.55 0.19 330);
+	--color-primary-element-text: oklch(0.98 0.003 330);
+	--color-primary-element-light: oklch(0.94 0.02 330);
+	--color-primary-element-light-text: oklch(0.38 0.12 330);
+
+	--color-main-background: oklch(1 0 0);
+	--color-main-background-rgb: 255, 255, 255;
+	--color-main-background-blur: oklch(1 0 0 / 0.85);
+	--color-main-text: oklch(0.18 0.03 280);
+	--color-text-maxcontrast: oklch(0.50 0.04 280);
+	--color-border: oklch(0.92 0.012 330);
+
+	--color-background-plain: oklch(0.985 0.003 330);
+	--color-background-plain-text: oklch(0.18 0.03 280);
+
+	/* Themed backdrop — light-pink hero gradient (matches the app) */
+	--image-background: linear-gradient(135deg, oklch(0.96 0.03 330), oklch(0.985 0.003 330));
+	--image-background-default: linear-gradient(135deg, oklch(0.96 0.03 330), oklch(0.985 0.003 330));
+
+	--border-radius: 8px;
+	--border-radius-element: 8px;
+	--border-radius-large: 10px;
+	--border-radius-container: 14px;
+	--border-radius-container-large: 18px;
+	--border-radius-pill: 9999px;
+}
+
+/* --- Login: DARK (visitor's OS is in dark mode) --- */
+@media (prefers-color-scheme: dark) {
+	body#body-login {
+		--color-primary: oklch(0.14 0.04 280);
+		--color-primary-text: oklch(0.93 0.01 280);
+		--color-primary-hover: oklch(0.22 0.05 285);
+
+		--color-primary-element: oklch(0.65 0.20 330);
+		--color-primary-element-hover: oklch(0.60 0.20 330);
+		--color-primary-element-text: oklch(0.98 0.003 330);
+		--color-primary-element-light: oklch(0.24 0.06 330);
+		--color-primary-element-light-text: oklch(0.75 0.12 330);
+
+		--color-main-background: oklch(0.20 0.025 280);
+		--color-main-background-rgb: 20, 21, 33;
+		--color-main-background-blur: oklch(0.20 0.025 280 / 0.85);
+		--color-main-text: oklch(0.93 0.01 280);
+		--color-text-maxcontrast: oklch(0.65 0.03 280);
+		--color-border: oklch(0.28 0.02 280);
+
+		--color-background-plain: oklch(0.16 0.02 280);
+		--color-background-plain-text: oklch(0.93 0.01 280);
+
+		/* Themed backdrop — dark pink -> navy gradient (matches the app) */
+		--image-background: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
+		--image-background-default: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
+	}
 }

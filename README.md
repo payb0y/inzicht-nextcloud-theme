@@ -12,10 +12,12 @@ Built and verified against **Nextcloud 34**. See "Version compatibility" below.
 ```
 themes/inzicht/            <- the theme (copy this into <nextcloud>/themes/)
   defaults.php             empty OC_Theme (keeps NC's product name/footer)
-  core/css/*.css           tokens, fonts, components, motion, login
+  core/css/server.css      ALL styles in one file — tokens, fonts, components,
+                           motion, login (single-file on purpose; see "Caching")
   core/fonts/*.woff2       self-hosted Inter + Space Grotesk (no CDN, CSP-safe)
   core/img/Logo.png        the In Zicht header logo
-install.sh                 one-shot installer
+install.sh                 one-shot installer (mounted/filesystem installs)
+deploy-docker.sh           one-shot installer (Dockerized Nextcloud) — SAFE copy
 README.md                  this file
 ```
 
@@ -30,14 +32,29 @@ sudo ./install.sh /path/to/nextcloud [web-user]
 # e.g.  sudo ./install.sh /var/www/nextcloud www-data
 ```
 
-### Docker
+### Docker (recommended: use the script)
 
-If Nextcloud runs in a container (`CT` = container name, from `docker ps`):
+If Nextcloud runs in a container, use `deploy-docker.sh` (`CT` = container name
+from `docker ps`):
 
 ```bash
 git clone https://github.com/payb0y/inzicht-nextcloud-theme.git
 cd inzicht-nextcloud-theme
-CT=nextcloud
+./deploy-docker.sh nextcloud-app              # <- your container name
+# optional: ./deploy-docker.sh <container> <nextcloud-root> <web-user>
+```
+
+It removes the old theme dir first, copies the new one, sets the logos, and busts
+Nextcloud's asset cache. **Do not** hand-run `docker cp themes/inzicht CT:.../themes/inzicht`
+without removing the target first — when the destination already exists, `docker cp`
+copies the folder *inside* it (`.../themes/inzicht/inzicht/...`), so your update
+silently lands in a buried directory and never takes effect.
+
+If you must do it by hand:
+
+```bash
+CT=nextcloud-app
+docker exec -u root "$CT" rm -rf /var/www/html/themes/inzicht     # <-- the crucial step
 docker cp themes/inzicht "$CT":/var/www/html/themes/inzicht
 docker exec -u root      "$CT" chown -R www-data:www-data /var/www/html/themes/inzicht
 docker exec -u www-data  "$CT" php occ config:system:set theme --value inzicht
@@ -51,10 +68,10 @@ docker exec -u www-data  "$CT" php occ maintenance:mode --off
 
 ```bash
 cd inzicht-nextcloud-theme && git pull
-# then re-run install.sh (or the docker cp + occ maintenance toggle above)
+./deploy-docker.sh nextcloud-app      # (or re-run install.sh for filesystem installs)
 ```
 
-Then hard-refresh the browser (Ctrl+Shift+R).
+Then hard-refresh the browser once (Ctrl+Shift+R).
 
 ## Install (automated, from a local copy)
 
@@ -72,7 +89,8 @@ Then hard-refresh the browser (Ctrl+Shift+R).
 Let `NC=/var/www/nextcloud` and `WEB=www-data`.
 
 ```bash
-# 1. Copy the theme in
+# 1. Copy the theme in (remove any old copy first, so cp can't nest it)
+sudo rm -rf "$NC/themes/inzicht"
 sudo cp -r themes/inzicht "$NC/themes/inzicht"
 sudo chown -R "$WEB":"$WEB" "$NC/themes/inzicht"
 
@@ -130,11 +148,21 @@ This theme maps the In Zicht palette onto Nextcloud's CSS custom properties
   `#header #nextcloud .logo`) may drift.
 - After deploying, click through Files / Dashboard / Settings in light and dark and
   check the browser console for CSS issues. If a component looks off, inspect its
-  live class name and adjust the matching rule in `core/css/inzicht-components.css`
-  or the header-logo block in `core/css/server.css`.
+  live class name and adjust the matching rule in `core/css/server.css` (all styles
+  live in that one file, organized into commented sections).
 
 The `themes/` folder is not touched by Nextcloud core upgrades, so the theme
 survives updates — but re-verify after a **major** version bump.
+
+## Caching (why it's a single CSS file)
+
+All styles live in one `core/css/server.css`. Nextcloud adds a `?v=` cache-buster
+to the `<link>` for that file, so after you deploy and bust the asset cache
+(`occ maintenance:mode --on` then `--off`), the change reaches everyone. Earlier
+versions split the CSS into `@import`-ed partials — but browsers fetch `@import`-ed
+files **without** the `?v=` query and cache them for months, so updates wouldn't
+show without a manual hard-refresh. Keep it single-file; don't re-introduce
+`@import`.
 
 ## Notes
 
