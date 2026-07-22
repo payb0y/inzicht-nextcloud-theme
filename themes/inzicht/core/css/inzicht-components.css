@@ -45,3 +45,12 @@ select:focus-visible {
 	color: oklch(0.38 0.12 330);
 	border-radius: var(--border-radius-pill);
 }
+
+/* Settings: Nextcloud 34's nav collapse toggle (.app-navigation-toggle) sits at
+   the top-left of the content column and overlaps the first section's header
+   (a stock NC quirk, present without this theme too). Add top clearance so the
+   settings section headers drop below the toggle. */
+#body-settings #app-content {
+	padding-top: 24px;
+	box-sizing: border-box;
+}
