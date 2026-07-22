@@ -305,22 +305,28 @@ main {
 
 
 /* ===== 7. Login page =====
-   The login page (body#body-login) has no [data-theme-*] attribute, so the token
-   overrides above don't reach it — and it follows the visitor's system scheme
-   (prefers-color-scheme), NOT a stored theme. So we theme it in two passes: light
-   by default, dark under the media query.
+   The login page (body#body-login) has no [data-theme-*] attribute and no logged-in
+   user, so it can only see the visitor's OS scheme (prefers-color-scheme) — it can't
+   know the instance's chosen theme. We deliberately pin it to LIGHT so the login is a
+   consistent, branded light page regardless of the visitor's OS (a dark-OS visitor no
+   longer gets a dark login on a light Nextcloud). The app itself still follows each
+   user's Light/Dark/System choice once logged in.
 
-   Selector is body#body-login (specificity 1,0,1) and this theme CSS loads LAST,
-   so it reliably wins over: Nextcloud's default background image on :root (the blue
-   "fluid" blobs), the Theming admin panel, and the 'custom' login-image app. We set
-   --image-background to the In Zicht gradient so the login backdrop matches the app.
+   `color-scheme: light` forces the browser's own form-control rendering (inputs,
+   autofill, scrollbars) to light too, so a dark-OS browser can't tint them.
 
-   NOTE: this supersedes the 'custom' app's login background image. If you want that
-   app to control the login background instead, remove the two --image-background
-   lines in each block below. */
+   Selector is body#body-login (specificity 1,0,1) and this theme CSS loads LAST, so it
+   reliably wins over NC's :root defaults (including the dark prefers-color-scheme block
+   and the blue "fluid" background blobs), the Theming panel, and the 'custom' app.
 
-/* --- Login: LIGHT (default) --- */
+   NOTE: --image-background here supersedes the 'custom' app's login background image.
+   To let that app control the login background instead, remove the two
+   --image-background lines below.
+   To make the login follow the OS instead (light on light OS, dark on dark OS), see the
+   git history for the previous @media (prefers-color-scheme: dark) block. */
 body#body-login {
+	color-scheme: light;
+
 	--color-primary: oklch(0.25 0.08 290);
 	--color-primary-text: oklch(0.98 0.003 290);
 	--color-primary-hover: oklch(0.30 0.08 295);
@@ -351,33 +357,4 @@ body#body-login {
 	--border-radius-container: 14px;
 	--border-radius-container-large: 18px;
 	--border-radius-pill: 9999px;
-}
-
-/* --- Login: DARK (visitor's OS is in dark mode) --- */
-@media (prefers-color-scheme: dark) {
-	body#body-login {
-		--color-primary: oklch(0.14 0.04 280);
-		--color-primary-text: oklch(0.93 0.01 280);
-		--color-primary-hover: oklch(0.22 0.05 285);
-
-		--color-primary-element: oklch(0.65 0.20 330);
-		--color-primary-element-hover: oklch(0.60 0.20 330);
-		--color-primary-element-text: oklch(0.98 0.003 330);
-		--color-primary-element-light: oklch(0.24 0.06 330);
-		--color-primary-element-light-text: oklch(0.75 0.12 330);
-
-		--color-main-background: oklch(0.20 0.025 280);
-		--color-main-background-rgb: 20, 21, 33;
-		--color-main-background-blur: oklch(0.20 0.025 280 / 0.85);
-		--color-main-text: oklch(0.93 0.01 280);
-		--color-text-maxcontrast: oklch(0.65 0.03 280);
-		--color-border: oklch(0.28 0.02 280);
-
-		--color-background-plain: oklch(0.16 0.02 280);
-		--color-background-plain-text: oklch(0.93 0.01 280);
-
-		/* Themed backdrop — dark pink -> navy gradient (matches the app) */
-		--image-background: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
-		--image-background-default: linear-gradient(135deg, oklch(0.18 0.04 330), oklch(0.16 0.02 280));
-	}
 }
