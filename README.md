@@ -19,7 +19,44 @@ install.sh                 one-shot installer
 README.md                  this file
 ```
 
-## Install (automated)
+## Install via git (recommended)
+
+On the production server, clone this repo and run the installer:
+
+```bash
+git clone https://github.com/payb0y/inzicht-nextcloud-theme.git
+cd inzicht-nextcloud-theme
+sudo ./install.sh /path/to/nextcloud [web-user]
+# e.g.  sudo ./install.sh /var/www/nextcloud www-data
+```
+
+### Docker
+
+If Nextcloud runs in a container (`CT` = container name, from `docker ps`):
+
+```bash
+git clone https://github.com/payb0y/inzicht-nextcloud-theme.git
+cd inzicht-nextcloud-theme
+CT=nextcloud
+docker cp themes/inzicht "$CT":/var/www/html/themes/inzicht
+docker exec -u root      "$CT" chown -R www-data:www-data /var/www/html/themes/inzicht
+docker exec -u www-data  "$CT" php occ config:system:set theme --value inzicht
+docker exec -u www-data  "$CT" php occ theming:config logoheader /var/www/html/themes/inzicht/core/img/Logo.png
+docker exec -u www-data  "$CT" php occ theming:config logo       /var/www/html/themes/inzicht/core/img/Logo.png
+docker exec -u www-data  "$CT" php occ maintenance:mode --on
+docker exec -u www-data  "$CT" php occ maintenance:mode --off
+```
+
+### Updating later
+
+```bash
+cd inzicht-nextcloud-theme && git pull
+# then re-run install.sh (or the docker cp + occ maintenance toggle above)
+```
+
+Then hard-refresh the browser (Ctrl+Shift+R).
+
+## Install (automated, from a local copy)
 
 Copy this folder to the production server, then:
 
