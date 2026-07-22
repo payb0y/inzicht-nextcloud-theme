@@ -1,0 +1,42 @@
+/* In Zicht theme — entry point. @import rules MUST come first (CSS spec). */
+@import url('./inzicht-fonts.css');
+@import url('./inzicht-tokens.css');
+@import url('./inzicht-components.css');
+@import url('./inzicht-motion.css');
+@import url('./inzicht-login.css');
+
+/* Body font (Inter) — override NC's --font-face. NC injects it dynamically as
+   [data-theme-<id>] { … } which loads AFTER this file, so we use the double
+   attribute [data-themes][data-theme-<id>] (specificity 0,2,0) to win regardless
+   of source order. The same pattern is used for color tokens (see inzicht-tokens.css). */
+[data-themes][data-theme-default],
+[data-themes][data-theme-light],
+[data-themes][data-theme-dark],
+[data-themes][data-theme-dark-highcontrast] {
+	--font-face: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Guest/login body uses a literal font stack, not var(--font-face) */
+#body-login,
+body.login {
+	font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Headings use Space Grotesk */
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+/* Header logo — the In Zicht lockup is a wide horizontal mark (~3.24:1).
+   NC's logo link is 62px wide with overflow:hidden, so widen the link itself
+   and the logo box, and left-align the mark, so the whole wordmark reads. */
+#header #nextcloud {
+	width: 176px;
+	padding-inline-start: 0;
+	overflow: visible;
+}
+#header #nextcloud .logo {
+	width: 100%;
+	background-position: left center;
+	background-size: contain;
+}

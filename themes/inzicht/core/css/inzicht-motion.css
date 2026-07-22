@@ -1,0 +1,25 @@
+/* ===== In Zicht motion ===== */
+@keyframes inzichtPageEnter {
+	from { opacity: 0; transform: translateY(8px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes inzichtFadeSlideUp {
+	from { opacity: 0; transform: translateY(24px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Page transition on app content */
+#app-content,
+#app-content-vue,
+#content-vue main,
+main {
+	animation: inzichtPageEnter 0.4s ease-out;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	#app-content,
+	#app-content-vue,
+	#content-vue main,
+	main { animation: none; }
+}
