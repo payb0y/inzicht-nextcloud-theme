@@ -1105,6 +1105,203 @@ input.iz-input--sm, select.iz-select--sm { padding: 4px 8px; font-size: var(--iz
 }
 
 
+/* ── Stat grid ───────────────────────────────────────────────────────────
+   The 4-up KPI/alert/health strip. Seven components had written this same
+   grid with the same two breakpoints; the breakpoints are part of the
+   primitive so they can't drift apart. */
+.iz-stat-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: var(--iz-gap);
+}
+@media (max-width: 1200px) {
+	.iz-stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+	.iz-stat-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ── Meter ───────────────────────────────────────────────────────────────
+   Track + fill progress bar. Six components each had their own, differing
+   only in track height and which tone names they used (high/mid/low vs
+   ok/warn/danger). One geometry, one set of tone names; --thin is the 4px
+   variant used inside dense cards. */
+.iz-meter {
+	position: relative;
+	height: 6px;
+	background: var(--iz-border);
+	border-radius: var(--iz-radius-pill);
+	overflow: hidden;
+	flex: 1;
+}
+.iz-meter--thin { height: 4px; }
+.iz-meter__fill {
+	height: 100%;
+	border-radius: inherit;
+	background: var(--iz-accent);
+	transition: width 0.4s ease, background-color 0.2s ease;
+}
+.iz-meter__fill--ok { background: var(--iz-success); }
+.iz-meter__fill--warn { background: var(--iz-warning-text); }
+.iz-meter__fill--danger { background: var(--iz-danger); }
+.iz-meter__fill--accent { background: var(--iz-accent); }
+/* No reading available (null percent) — a visible but inert track fill. */
+.iz-meter__fill--neutral { background: var(--iz-border-strong); }
+@media (prefers-reduced-motion: reduce) {
+	.iz-meter__fill { transition: none; }
+}
+
+
+/* ── Identity ────────────────────────────────────────────────────────────
+   Avatar + name + secondary line. The shape behind a member row, an org
+   card header and a search result. Truncation is built in — every local
+   copy of this had to remember three properties to stop long names blowing
+   out the layout, and not all of them did. */
+.iz-identity {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+.iz-identity__avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: var(--iz-radius-lg);
+	background: var(--iz-accent);
+	color: var(--iz-accent-text);
+	font-size: var(--iz-fs-lg);
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+.iz-identity__avatar--sm { width: 28px; height: 28px; font-size: var(--iz-fs-sm); }
+/* Soft variant — tinted rather than solid, for avatars inside an already
+   busy card. Background and text move together: overriding only one of
+   them is how you get an invisible initial. */
+.iz-identity__avatar--soft {
+	background: var(--iz-accent-bg);
+	color: var(--iz-accent-bg-text);
+}
+.iz-identity__avatar--lg { width: 40px; height: 40px; font-size: var(--iz-fs-lg); }
+.iz-identity__body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1;
+	min-width: 0;
+}
+.iz-identity__name,
+.iz-identity__meta {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.iz-identity__name {
+	font-size: var(--iz-fs-md);
+	font-weight: 600;
+	color: var(--iz-text);
+}
+.iz-identity__meta {
+	font-size: var(--iz-fs-xs);
+	color: var(--iz-text-muted);
+}
+
+
+/* ── State line ──────────────────────────────────────────────────────────
+   The quiet italic "Searching…" / "No plan set" line under a field. */
+.iz-state {
+	font-size: var(--iz-fs-sm);
+	color: var(--iz-text-muted);
+	font-style: italic;
+}
+
+
+/* ── User picker ─────────────────────────────────────────────────────────
+   Search field -> result list -> add button. MembersPanel and ProjectsPanel
+   had this whole composite duplicated (35 rules between them), which is why
+   it is a primitive rather than a set of loose classes: it is one component
+   that happens to be used twice. */
+.iz-user-picker {
+	background: var(--iz-surface-subtle);
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius-lg);
+	padding: 12px 14px;
+}
+.iz-user-picker__results {
+	list-style: none;
+	margin: 8px 0 0;
+	padding: 0;
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius);
+	overflow: hidden;
+	max-height: 220px;
+	overflow-y: auto;
+}
+.iz-user-picker__result {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--iz-border);
+}
+.iz-user-picker__result:last-child { border-bottom: none; }
+/* The round +. Sized to match .iz-btn--icon so a picker row and a toolbar
+   line up. */
+.iz-user-picker__add {
+	width: 28px;
+	height: 28px;
+	flex-shrink: 0;
+	border-radius: var(--iz-radius);
+	border: 1px solid var(--iz-accent);
+	background: var(--iz-surface);
+	color: var(--iz-accent);
+	font-size: var(--iz-fs-lg);
+	font-weight: 700;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color var(--iz-transition), color var(--iz-transition);
+}
+.iz-user-picker__add:hover:not(:disabled) {
+	background: var(--iz-accent);
+	color: var(--iz-accent-text);
+}
+.iz-user-picker__add:disabled { opacity: 0.5; cursor: not-allowed; }
+
+
+/* ── Modal confirm block ─────────────────────────────────────────────────
+   The "type your password to confirm" step, which four components had
+   rebuilt. The hidden username input is a real accessibility requirement,
+   not decoration: password managers need a username field adjacent to a
+   password field, and it was silently missing from one of the copies. */
+.iz-modal__confirm-text {
+	font-size: var(--iz-fs-sm);
+	color: var(--iz-text-secondary);
+	line-height: 1.5;
+}
+.iz-modal__confirm-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	border-top: 1px solid var(--iz-border);
+	padding-top: 12px;
+	margin-top: 4px;
+}
+.iz-hidden-username {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+
 /* Native controls inside an In Zicht app follow the accent. */
 .iz-app input[type='checkbox'],
 .iz-app input[type='radio'],
