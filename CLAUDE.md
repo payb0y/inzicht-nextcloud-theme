@@ -85,6 +85,39 @@ browsers for ~6 months, so updates silently don't show. The theme used to be spl
 `inzicht-{fonts,tokens,components,motion,login}.css`; that caused "my changes don't
 appear" bugs. **Never re-introduce `@import`.** Edit sections in `server.css`.
 
+## `.iz-*` UI primitives (section 8) — shared across our own apps
+
+Sections 1–7 restyle **Nextcloud core**. Section 8 is different: it's a set of opt-in
+classes (`.iz-panel`, `.iz-card`, `.iz-row`, `.iz-table`, `.iz-pill`, `.iz-badge`,
+`.iz-btn`, `.iz-input`, `.iz-label`, `.iz-metric`, `.iz-pagination`, `.iz-empty`,
+`.iz-modal`, …) plus an `--iz-*` token set, used by the **In Zicht custom apps**
+(`superadminpage`, `adminpage`, `employee-dashboard`). It targets nothing in stock NC,
+so it's inert on core pages.
+
+It lives here rather than in each app because:
+
+- one definition means a Projects row and a Members row can't drift apart — the apps
+  had accumulated 5 row models, 10 badge variants and 4 duplicate button bases;
+- **theme CSS gets NC's `?v=` cache-buster; app webpack bundles do not**, so a shared
+  fix ships with `git pull` + deploy, no rebuild and no stale-bundle debugging;
+- a new app inherits the look by applying classes.
+
+Rules when working on it:
+
+- `--iz-*` tokens derive from the section-3 palette, so light/dark follow automatically.
+  Never hardcode a color in an app — add or use a token.
+- Every categorical/status color has a **tint companion** (`--iz-cat-5` + `--iz-cat-5-bg`,
+  `--iz-success` + `--iz-success-bg` + `--iz-success-text`). Badges must pair a tint
+  background with a solid text color; using the same token for both renders invisible
+  text (a bug we shipped once already).
+- Two row models only: `.iz-row` (flush, separated by rules, inside a panel) and
+  `.iz-row--card` (standalone card per row). Pick one per list, never mix.
+- Apps keep local CSS for **layout** (grid tracks, widths, region gaps) and use
+  primitives for **chrome** (surface, border, radius, shadow, type scale, hover, focus).
+- Apps alias their legacy token names to `--iz-*` with a full fallback chain, e.g.
+  `--bg-card: var(--iz-surface, var(--color-main-background, #fff))`, so they still
+  render if the In Zicht theme isn't the active one.
+
 ## Local dev / test harness (this machine)
 
 Testing needs a running NC 34. On this machine there's a docker dev stack at
@@ -92,13 +125,42 @@ Testing needs a running NC 34. On this machine there's a docker dev stack at
 served from `workspace/server/themes/inzicht` there (that dir is a copy of this repo's
 `themes/inzicht`).
 
-Bring it up and use it:
+### ⚠️ Starting it — `start`, never `up`
+
+The instance runs on **PostgreSQL** in a container named **`nc_pg`** (created by hand,
+not by this compose file — it has no compose labels and is NOT a compose service).
+The compose file still defines a `database-mysql` service holding a **stale June dev
+copy**; the live production data is only in `nc_pg`.
+
+`docker compose up` starts `database-mysql` and runs the nextcloud entrypoint's
+**auto-installer**, which overwrites `/var/www/html/config/config.php` with a fresh
+MySQL stub whenever it can't validate the install. That silently repoints the instance
+at the wrong (stale) database. It happened on 2026-07-24. Use `start`:
 
 ```bash
 cd /home/payboy/src/nextcloud-docker-dev
-docker compose up -d nextcloud            # starts nextcloud + db(mysql) + redis + mail + proxy
-# do NOT `docker compose up -d` with no args — it tries every optional service and fails.
+docker start nc_pg                        # the real database — start it FIRST
+docker compose start nextcloud proxy redis mail   # start, NOT up — up re-runs the installer
 
+# Only if a container genuinely doesn't exist yet does `up` make sense — and then
+# back up config.php first (see below).
+```
+
+Config lives in the **`master_config` docker volume**, not in
+`workspace/server/config/` (that dir is empty by design — don't be fooled by it):
+
+```bash
+docker run --rm -v master_config:/c alpine cat /c/config.php
+```
+
+Known-good copies are kept in `/home/payboy/src/nextcloud-docker-dev/backups/`
+(`config.php.pgsql-working-*` plus `pg_dump` snapshots). If the installer clobbers
+config.php again, restore from there — the essential keys are `dbtype => pgsql`,
+`dbhost => nc_pg`, `dbuser/dbpassword => nextcloud`, plus `instanceid`,
+`passwordsalt`, `secret` and `theme => inzicht`. Losing `secret`/`passwordsalt` breaks
+sessions and stored credentials, so never hand-write a config without them.
+
+```bash
 # URL: http://nextcloud.local:8080/   (admin / admin)
 # nextcloud.local must resolve; WSL wipes /etc/hosts on restart, so if it's missing:
 #   echo "127.0.0.1 nextcloud.local" | sudo tee -a /etc/hosts   (needs the user's password)
@@ -106,6 +168,10 @@ docker compose up -d nextcloud            # starts nextcloud + db(mysql) + redis
 # occ (theme is 'inzicht'):
 docker compose exec -u www-data -T nextcloud php occ config:system:get theme
 docker compose exec -u www-data -T nextcloud php occ config:system:set theme --value inzicht
+
+# fresh DB backup before any risky change:
+docker exec nc_pg pg_dump -U nextcloud -d nextcloud --clean --if-exists \
+  > backups/nextcloud_pg_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 Iterating: edit `server.css` in this repo, then sync it into the dev instance and

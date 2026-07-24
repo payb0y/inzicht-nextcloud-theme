@@ -18,6 +18,7 @@
      5. Motion
      6. Header logo sizing
      7. Login page (handles its own light/dark scheme)
+     8. In Zicht UI primitives (.iz-*) — opt-in classes for our own apps
    ============================================================================ */
 
 
@@ -357,4 +358,717 @@ body#body-login {
 	--border-radius-container: 14px;
 	--border-radius-container-large: 18px;
 	--border-radius-pill: 9999px;
+}
+
+
+/* ============================================================================
+   ===== 8. In Zicht UI primitives (.iz-*) =====
+
+   Shared building blocks for the In Zicht *custom apps* (superadminpage,
+   adminpage, employee-dashboard). Nothing here targets Nextcloud core — these
+   classes only apply where an app opts in by using them, so this section is
+   inert for stock NC pages.
+
+   Why they live in the theme and not in each app:
+     - one definition, so a Projects row and a Members row cannot drift apart;
+     - theme CSS gets NC's ?v= cache-buster, app webpack bundles do NOT, so a
+       shared style fix ships with `git pull` + deploy, no rebuild, no stale
+       bundle;
+     - a new app inherits the whole look by applying classes.
+
+   All values derive from the NC theme tokens set in section 3, so light/dark
+   follow automatically. Fallbacks are for the (unlikely) case an app renders
+   outside a themed document.
+
+   Usage rule for apps: prefer a primitive over a bespoke rule. Keep app-local
+   CSS for layout (grid tracks, widths, gaps between regions) — not for chrome
+   (surface, border, radius, shadow, type scale, hover, focus).
+   ============================================================================ */
+
+:root,
+body {
+	/* — surfaces & text — */
+	--iz-surface: var(--color-main-background, #fff);
+	--iz-surface-subtle: var(--color-background-hover, #faf6fa);
+	--iz-surface-inset: var(--color-background-dark, #f3ecf3);
+	--iz-border: var(--color-border, #ece0ec);
+	--iz-border-strong: var(--color-border-dark, #e6d8e6);
+	--iz-text: var(--color-main-text, #24172e);
+	--iz-text-secondary: var(--color-text-maxcontrast, #6a6472);
+	--iz-text-muted: color-mix(in oklab, var(--color-text-maxcontrast, #6a6472) 70%, var(--color-main-background, #fff));
+
+	/* — accent — */
+	--iz-accent: var(--color-primary-element, #cc3d94);
+	--iz-accent-hover: var(--color-primary-element-hover, #bd3487);
+	--iz-accent-text: var(--color-primary-element-text, #fff);
+	--iz-accent-bg: var(--color-primary-element-light, #f6e4f0);
+	--iz-accent-bg-text: var(--color-primary-element-light-text, #8a2b6b);
+
+	/* — status ramps: one source for every pill/badge/banner —
+	   Each has a solid tone (dots, bars, borders) and a tinted bg + readable
+	   text pair. Never hand-mix a status color; use these. */
+	--iz-success: #1f7a3e;
+	--iz-success-text: #166534;
+	--iz-success-bg: color-mix(in oklab, #1f7a3e 14%, var(--color-main-background, #fff));
+	--iz-warning: var(--color-warning, #ecc980);
+	--iz-warning-text: #a86a12;
+	--iz-warning-bg: color-mix(in oklab, var(--color-warning, #ecc980) 30%, var(--color-main-background, #fff));
+	--iz-danger: var(--color-error, #c9314a);
+	--iz-danger-text: var(--color-error, #b42318);
+	--iz-danger-bg: color-mix(in oklab, var(--color-error, #c9314a) 14%, var(--color-main-background, #fff));
+
+	/* — categorical / chart colors (functional, deliberately not pink-washed) —
+	   Each has a tint companion so a badge never renders text-on-same-color. */
+	--iz-cat-1: var(--color-primary-element, #cc3d94);
+	--iz-cat-2: var(--color-primary, #3a2350);
+	--iz-cat-3: #2f9e8f;
+	--iz-cat-4: #d98a2b;
+	--iz-cat-5: #7c5cbf;
+	/* On-tint TEXT companions. --iz-cat-N is the chart/solid fill and is chosen to
+	   look right as a large area; used as 11px badge text it fails WCAG AA, so
+	   badges use these darker (light mode) / lighter (dark mode) pairs instead. */
+	--iz-cat-1-text: var(--color-primary-element-light-text, #8a2b6b);
+	--iz-cat-2-text: oklch(0.30 0.08 290);
+	--iz-cat-3-text: oklch(0.38 0.09 180);
+	--iz-cat-4-text: oklch(0.42 0.11 70);
+	--iz-cat-5-text: oklch(0.42 0.16 300);
+	--iz-cat-1-bg: color-mix(in oklab, var(--iz-cat-1) 14%, var(--color-main-background, #fff));
+	--iz-cat-2-bg: color-mix(in oklab, var(--iz-cat-2) 12%, var(--color-main-background, #fff));
+	--iz-cat-3-bg: color-mix(in oklab, var(--iz-cat-3) 16%, var(--color-main-background, #fff));
+	--iz-cat-4-bg: color-mix(in oklab, var(--iz-cat-4) 18%, var(--color-main-background, #fff));
+	--iz-cat-5-bg: color-mix(in oklab, var(--iz-cat-5) 16%, var(--color-main-background, #fff));
+
+	/* — radii (mapped to the NC/newstyle scale from section 3) — */
+	--iz-radius-sm: var(--border-radius-small, 6px);
+	--iz-radius: var(--border-radius-element, 8px);
+	--iz-radius-lg: var(--border-radius-large, 10px);
+	--iz-radius-card: var(--border-radius-container, 14px);
+	--iz-radius-pill: var(--border-radius-pill, 9999px);
+
+	/* — elevation — */
+	--iz-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	--iz-shadow-lift: 0 12px 32px -8px oklch(0.60 0.19 330 / 0.15),
+		0 4px 12px -4px oklch(0 0 0 / 0.08);
+	--iz-shadow-accent: 0 10px 40px -12px oklch(0.60 0.19 330 / 0.25);
+	--iz-shadow-modal: 0 20px 60px oklch(0.25 0.08 290 / 0.28);
+	--iz-scrim: oklch(0.25 0.08 290 / 0.45);
+
+	/* — spacing: ONE gap for stacked regions, one padding per container kind — */
+	--iz-gap: 16px;
+	--iz-gap-tight: 10px;
+	--iz-pad-panel: 20px;
+	--iz-pad-card: 16px;
+	--iz-pad-row: 12px 16px;
+	--iz-pad-cell: 10px 12px;
+
+	/* — type ramp: the only sizes an In Zicht app should use — */
+	--iz-fs-micro: 10px;   /* eyebrow labels, table headers */
+	--iz-fs-xs: 11px;      /* pills, badges, metric labels */
+	--iz-fs-sm: 12px;      /* secondary text, buttons */
+	--iz-fs-md: 13px;      /* body / row text */
+	--iz-fs-lg: 15px;      /* card titles */
+	--iz-fs-xl: 20px;      /* metric values */
+	--iz-fs-2xl: 24px;     /* page-level figures */
+
+	/* — motion — */
+	--iz-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--iz-transition: 0.15s ease;
+}
+
+/* Dark: the status/categorical TEXT tones and solids above are chosen for a white
+   surface. On the dark surface they render dark-on-dark, so they are re-pitched
+   light here. The matching *-bg tints need no override — they are color-mix()'d
+   against --color-main-background and darken on their own.
+   KEEP THE TWO BLOCKS BELOW IN SYNC (explicit dark + "Default = follow system"),
+   same as the palette in section 3. */
+[data-themes][data-theme-dark] {
+	--iz-success: oklch(0.72 0.16 150);
+	--iz-success-text: oklch(0.80 0.15 150);
+	--iz-warning-text: oklch(0.85 0.12 85);
+	--iz-danger-text: oklch(0.75 0.16 27);
+	--iz-cat-2: oklch(0.80 0.06 290);
+	--iz-cat-3: oklch(0.78 0.11 180);
+	--iz-cat-4: oklch(0.80 0.13 70);
+	--iz-cat-5: oklch(0.75 0.14 300);
+	--iz-cat-2-text: oklch(0.82 0.06 290);
+	--iz-cat-3-text: oklch(0.80 0.11 180);
+	--iz-cat-4-text: oklch(0.82 0.13 70);
+	--iz-cat-5-text: oklch(0.78 0.14 300);
+}
+
+@media (prefers-color-scheme: dark) {
+	[data-themes][data-theme-default] {
+		--iz-success: oklch(0.72 0.16 150);
+		--iz-success-text: oklch(0.80 0.15 150);
+		--iz-warning-text: oklch(0.85 0.12 85);
+		--iz-danger-text: oklch(0.75 0.16 27);
+		--iz-cat-2: oklch(0.80 0.06 290);
+		--iz-cat-3: oklch(0.78 0.11 180);
+		--iz-cat-4: oklch(0.80 0.13 70);
+		--iz-cat-5: oklch(0.75 0.14 300);
+		--iz-cat-2-text: oklch(0.82 0.06 290);
+		--iz-cat-3-text: oklch(0.80 0.11 180);
+		--iz-cat-4-text: oklch(0.82 0.13 70);
+		--iz-cat-5-text: oklch(0.78 0.14 300);
+	}
+}
+
+/* Headings and figures use Space Grotesk, like the rest of the theme. */
+.iz-panel__title,
+.iz-card__title,
+.iz-metric__value,
+.iz-figure {
+	font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+
+/* ── Layout: stacked regions ──────────────────────────────────────────────
+   The single source of the vertical rhythm between panels/cards. Every tab
+   uses this instead of its own gap, which is what kept Subscription and
+   Projects from lining up. */
+.iz-stack {
+	display: flex;
+	flex-direction: column;
+	gap: var(--iz-gap);
+}
+.iz-stack--tight { gap: var(--iz-gap-tight); }
+
+
+/* ── Panel: a top-level titled region ─────────────────────────────────────
+   Every tab body is a panel. `--flush` drops the chrome when the panel is
+   embedded inside another panel (detail views), replacing the old ad-hoc
+   `--embedded` modifiers. */
+.iz-panel {
+	background: var(--iz-surface);
+	border-radius: var(--iz-radius-card);
+	box-shadow: var(--iz-shadow);
+	padding: var(--iz-pad-panel);
+}
+.iz-panel--flush {
+	background: none;
+	border-radius: 0;
+	box-shadow: none;
+	padding: 0;
+}
+/* Panels that host a full-bleed list/table clip their children instead of
+   padding them. */
+.iz-panel--list {
+	padding: 0;
+	overflow: hidden;
+}
+
+.iz-panel__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: var(--iz-gap);
+}
+.iz-panel--list > .iz-panel__header {
+	margin-bottom: 0;
+	padding: var(--iz-pad-card);
+	border-bottom: 1px solid var(--iz-border);
+}
+.iz-panel__title {
+	font-size: var(--iz-fs-lg);
+	font-weight: 700;
+	color: var(--iz-text);
+	margin: 0;
+}
+
+
+/* ── Card: a bordered surface inside a panel ──────────────────────────────
+   One chrome recipe, not four. `--interactive` adds the theme's hover lift
+   and is the ONLY way a card should move. */
+.iz-card {
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius-lg);
+	box-shadow: var(--iz-shadow);
+	padding: var(--iz-pad-card);
+}
+.iz-card--interactive {
+	cursor: pointer;
+	transition: transform 0.3s var(--iz-ease), box-shadow 0.3s var(--iz-ease),
+		border-color var(--iz-transition);
+}
+.iz-card--interactive:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--iz-shadow-lift);
+}
+.iz-card--selected,
+.iz-card--interactive:focus-visible {
+	outline: none;
+	border-color: var(--iz-accent);
+	box-shadow: 0 0 0 2px var(--iz-accent), var(--iz-shadow-lift);
+}
+.iz-card__title {
+	font-size: var(--iz-fs-lg);
+	font-weight: 700;
+	color: var(--iz-text);
+	line-height: 1.2;
+	margin: 0;
+}
+
+
+/* ── Rows: the two sanctioned list models ────────────────────────────────
+   `.iz-row` = flush rows separated by rules, for lists inside a panel.
+   `.iz-row--card` = a standalone card per row, for browsable lists.
+   Pick one per list; never mix them in the same view. Both hover identically. */
+.iz-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: var(--iz-pad-row);
+	border-bottom: 1px solid var(--iz-border);
+	transition: background var(--iz-transition);
+}
+.iz-row:last-child { border-bottom: none; }
+.iz-row--clickable { cursor: pointer; }
+.iz-row--clickable:hover { background: var(--iz-surface-subtle); }
+.iz-row--clickable:focus-visible {
+	outline: none;
+	box-shadow: inset 0 0 0 2px var(--iz-accent);
+}
+.iz-row--active { background: var(--iz-accent-bg); }
+
+.iz-row--card {
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border);
+	border-bottom: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius-lg);
+	box-shadow: var(--iz-shadow);
+}
+.iz-row--card:last-child { border-bottom: 1px solid var(--iz-border); }
+.iz-row--card.iz-row--clickable:hover {
+	background: var(--iz-surface);
+	border-color: var(--iz-accent);
+	box-shadow: var(--iz-shadow-lift);
+}
+/* An expandable card-row lays its own header out; the row itself is the shell. */
+.iz-row--expandable {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	padding: 0;
+	gap: 0;
+}
+.iz-row__header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: var(--iz-pad-row);
+	cursor: pointer;
+	user-select: none;
+}
+.iz-row__header:focus-visible {
+	outline: none;
+	box-shadow: inset 0 0 0 2px var(--iz-accent);
+	border-radius: var(--iz-radius-lg);
+}
+.iz-row__detail {
+	border-top: 1px solid var(--iz-border);
+	padding: var(--iz-pad-card);
+	background: var(--iz-surface-subtle);
+}
+
+
+/* ── Table: for dense data only (backups, task lists) ────────────────────
+   Sits in a `.iz-table-wrap` so the chrome is on the wrapper and the table
+   itself stays borderless — that's what made Backups and Tasks look unrelated. */
+.iz-table-wrap {
+	overflow-x: auto;
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius);
+	background: var(--iz-surface);
+}
+.iz-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--iz-fs-md);
+}
+.iz-table th,
+.iz-table td {
+	padding: var(--iz-pad-cell);
+	text-align: left;
+	border-bottom: 1px solid var(--iz-border);
+	color: var(--iz-text);
+	vertical-align: middle;
+}
+.iz-table th {
+	background: var(--iz-surface-subtle);
+	font-size: var(--iz-fs-micro);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--iz-text-secondary);
+	white-space: nowrap;
+}
+.iz-table tbody tr { transition: background var(--iz-transition); }
+.iz-table tbody tr:hover { background: var(--iz-surface-subtle); }
+.iz-table tbody tr:last-child td { border-bottom: none; }
+.iz-table__cell--num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.iz-table__sort { cursor: pointer; user-select: none; }
+.iz-table__sort--active { color: var(--iz-accent); }
+
+
+/* ── Pill / badge: one geometry, tone modifiers only ─────────────────────
+   `.iz-pill` is the rounded status chip; `.iz-badge` is the squared-off
+   label chip. Tones are shared between them, so a status reads the same
+   everywhere it appears. */
+.iz-pill,
+.iz-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: var(--iz-fs-xs);
+	font-weight: 600;
+	padding: 3px 10px;
+	white-space: nowrap;
+	text-transform: capitalize;
+	background: var(--iz-surface-inset);
+	color: var(--iz-text-secondary);
+}
+.iz-pill { border-radius: var(--iz-radius-pill); }
+.iz-badge { border-radius: var(--iz-radius-sm); }
+
+.iz-pill--success, .iz-badge--success { background: var(--iz-success-bg); color: var(--iz-success-text); }
+.iz-pill--warning, .iz-badge--warning { background: var(--iz-warning-bg); color: var(--iz-warning-text); }
+.iz-pill--danger,  .iz-badge--danger  { background: var(--iz-danger-bg);  color: var(--iz-danger-text); }
+.iz-pill--accent,  .iz-badge--accent  { background: var(--iz-accent-bg);  color: var(--iz-accent-bg-text); }
+.iz-pill--muted,   .iz-badge--muted   { background: var(--iz-surface-inset); color: var(--iz-text-secondary); }
+.iz-pill--cat-1, .iz-badge--cat-1 { background: var(--iz-cat-1-bg); color: var(--iz-cat-1-text); }
+.iz-pill--cat-2, .iz-badge--cat-2 { background: var(--iz-cat-2-bg); color: var(--iz-cat-2-text); }
+.iz-pill--cat-3, .iz-badge--cat-3 { background: var(--iz-cat-3-bg); color: var(--iz-cat-3-text); }
+.iz-pill--cat-4, .iz-badge--cat-4 { background: var(--iz-cat-4-bg); color: var(--iz-cat-4-text); }
+.iz-pill--cat-5, .iz-badge--cat-5 { background: var(--iz-cat-5-bg); color: var(--iz-cat-5-text); }
+
+/* Status dot, for pills that lead with one. Inherits the pill's text color. */
+.iz-dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: currentColor;
+	display: inline-block;
+	flex-shrink: 0;
+}
+
+
+/* ── Buttons ─────────────────────────────────────────────────────────────
+   One base + tone modifiers, matching the theme's core-button motif:
+   pink primary, -2px hover lift, pink focus-visible ring. */
+.iz-app .iz-btn,
+button.iz-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	border: 1px solid transparent;
+	border-radius: var(--iz-radius);
+	padding: 7px 14px;
+	font-family: inherit;
+	font-size: var(--iz-fs-sm);
+	font-weight: 600;
+	line-height: 1.4;
+	cursor: pointer;
+	background: var(--iz-surface);
+	color: var(--iz-text);
+	border-color: var(--iz-border-strong);
+	transition: background-color 0.2s ease, color 0.2s ease,
+		border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.iz-app .iz-btn:hover:not(:disabled),
+button.iz-btn:hover:not(:disabled) {
+	background: var(--iz-surface-subtle);
+	border-color: var(--iz-accent);
+}
+.iz-app .iz-btn:focus-visible,
+button.iz-btn:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--iz-surface), 0 0 0 4px var(--iz-accent);
+}
+.iz-app .iz-btn:disabled,
+button.iz-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.iz-app .iz-btn--primary,
+button.iz-btn--primary {
+	background: var(--iz-accent);
+	color: var(--iz-accent-text);
+	border-color: var(--iz-accent);
+}
+.iz-app .iz-btn--primary:hover:not(:disabled),
+button.iz-btn--primary:hover:not(:disabled) {
+	background: var(--iz-accent-hover);
+	border-color: var(--iz-accent-hover);
+	transform: translateY(-2px);
+	box-shadow: var(--iz-shadow-accent);
+}
+
+.iz-app .iz-btn--ghost,
+button.iz-btn--ghost {
+	background: transparent;
+	color: var(--iz-text-secondary);
+	border-color: var(--iz-border-strong);
+}
+.iz-app .iz-btn--ghost:hover:not(:disabled),
+button.iz-btn--ghost:hover:not(:disabled) {
+	background: var(--iz-surface-subtle);
+	color: var(--iz-text);
+}
+
+.iz-app .iz-btn--danger,
+button.iz-btn--danger {
+	background: var(--iz-danger);
+	color: #fff;
+	border-color: var(--iz-danger);
+}
+.iz-app .iz-btn--danger:hover:not(:disabled),
+button.iz-btn--danger:hover:not(:disabled) {
+	filter: brightness(0.92);
+	border-color: var(--iz-danger);
+}
+
+/* Quiet, borderless action — for inline links and toolbar affordances. */
+.iz-app .iz-btn--plain,
+button.iz-btn--plain {
+	background: none;
+	border-color: transparent;
+	color: var(--iz-text-secondary);
+	padding: 4px 8px;
+}
+.iz-app .iz-btn--plain:hover:not(:disabled),
+button.iz-btn--plain:hover:not(:disabled) {
+	background: var(--iz-surface-subtle);
+	border-color: transparent;
+	color: var(--iz-accent);
+}
+
+.iz-app .iz-btn--sm,
+button.iz-btn--sm {
+	padding: 4px 10px;
+	font-size: var(--iz-fs-xs);
+}
+.iz-app .iz-btn--icon,
+button.iz-btn--icon {
+	padding: 0;
+	width: 28px;
+	height: 28px;
+	flex-shrink: 0;
+}
+
+/* Segmented control (view switchers, mode pickers). */
+.iz-segment {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	background: var(--iz-surface-inset);
+	border-radius: var(--iz-radius);
+}
+.iz-segment > .iz-btn {
+	border-color: transparent;
+	background: none;
+	box-shadow: none;
+}
+.iz-segment > .iz-btn--active {
+	background: var(--iz-surface);
+	color: var(--iz-accent);
+	box-shadow: var(--iz-shadow);
+}
+
+
+/* ── Form controls ───────────────────────────────────────────────────────
+   Same geometry as .iz-btn so a field and the button beside it line up. */
+.iz-app .iz-input, .iz-app .iz-select, .iz-app .iz-textarea,
+input.iz-input, select.iz-select, textarea.iz-textarea {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 7px 12px;
+	font-family: inherit;
+	font-size: var(--iz-fs-md);
+	color: var(--iz-text);
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border-strong);
+	border-radius: var(--iz-radius);
+	transition: border-color var(--iz-transition), box-shadow var(--iz-transition);
+}
+.iz-app .iz-input:focus, .iz-app .iz-select:focus, .iz-app .iz-textarea:focus,
+input.iz-input:focus, select.iz-select:focus, textarea.iz-textarea:focus {
+	outline: none;
+	border-color: var(--iz-accent);
+	box-shadow: 0 0 0 2px var(--iz-accent-bg);
+}
+.iz-app .iz-input::placeholder, .iz-app .iz-textarea::placeholder,
+input.iz-input::placeholder, textarea.iz-textarea::placeholder { color: var(--iz-text-muted); }
+.iz-app .iz-input:disabled, .iz-app .iz-select:disabled,
+input.iz-input:disabled, select.iz-select:disabled { opacity: 0.6; cursor: not-allowed; }
+.iz-app .iz-input--sm, .iz-app .iz-select--sm,
+input.iz-input--sm, select.iz-select--sm { padding: 4px 8px; font-size: var(--iz-fs-sm); }
+
+/* Field label — the uppercase eyebrow used above inputs and in card sections. */
+.iz-label {
+	display: block;
+	font-size: var(--iz-fs-micro);
+	font-weight: 700;
+	color: var(--iz-text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 6px;
+}
+/* Same eyebrow, used as a heading over a group rather than over one field. */
+.iz-section-title {
+	font-size: var(--iz-fs-micro);
+	font-weight: 700;
+	color: var(--iz-text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin: 0 0 12px;
+}
+
+
+/* ── Metrics ─────────────────────────────────────────────────────────────
+   The value/label pair used in KPI cards, org cards and detail headers. */
+.iz-metrics {
+	display: flex;
+	border-top: 1px solid var(--iz-border);
+	padding-top: 12px;
+}
+.iz-metric {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-left: 14px;
+	border-left: 1px solid var(--iz-border);
+	min-width: 0;
+}
+.iz-metric:first-child {
+	padding-left: 0;
+	border-left: none;
+}
+.iz-metric__value {
+	font-size: var(--iz-fs-xl);
+	font-weight: 700;
+	color: var(--iz-text);
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+}
+.iz-metric__label {
+	font-size: var(--iz-fs-xs);
+	color: var(--iz-text-muted);
+	line-height: 1.3;
+}
+
+
+/* ── Pagination ──────────────────────────────────────────────────────────
+   Was reimplemented five times across the app; this is the one. */
+.iz-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding-top: 12px;
+	font-size: var(--iz-fs-sm);
+	color: var(--iz-text-secondary);
+}
+.iz-pagination__pages {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+.iz-pagination__pages > .iz-btn { padding: 4px 10px; font-size: var(--iz-fs-sm); }
+.iz-pagination__pages > .iz-btn--active {
+	background: var(--iz-accent);
+	color: var(--iz-accent-text);
+	border-color: var(--iz-accent);
+}
+
+
+/* ── States: empty / loading / error ─────────────────────────────────────
+   A dashed inset box, so "nothing here" never looks like a broken card. */
+.iz-empty {
+	background: var(--iz-surface-subtle);
+	border: 1px dashed var(--iz-border-strong);
+	border-radius: var(--iz-radius-lg);
+	padding: 28px 20px;
+	text-align: center;
+	font-size: var(--iz-fs-md);
+	color: var(--iz-text-secondary);
+}
+.iz-error {
+	background: var(--iz-danger-bg);
+	border: 1px solid var(--iz-danger);
+	border-radius: var(--iz-radius);
+	padding: 10px 14px;
+	font-size: var(--iz-fs-md);
+	color: var(--iz-danger-text);
+}
+
+
+/* ── Modal ───────────────────────────────────────────────────────────────
+   The scrim was a hardcoded slate rgba() in three places; it is navy now. */
+.iz-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: var(--iz-scrim);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	z-index: 10000;
+}
+.iz-modal {
+	background: var(--iz-surface);
+	border-radius: var(--iz-radius-card);
+	box-shadow: var(--iz-shadow-modal);
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.iz-modal__header,
+.iz-modal__footer {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: var(--iz-pad-card);
+	flex-shrink: 0;
+}
+.iz-modal__header {
+	justify-content: space-between;
+	border-bottom: 1px solid var(--iz-border);
+}
+.iz-modal__footer {
+	justify-content: flex-end;
+	border-top: 1px solid var(--iz-border);
+}
+.iz-modal__body {
+	padding: var(--iz-pad-panel);
+	overflow-y: auto;
+}
+
+
+/* Native controls inside an In Zicht app follow the accent. */
+.iz-app input[type='checkbox'],
+.iz-app input[type='radio'],
+.iz-app input[type='range'],
+.iz-app progress {
+	accent-color: var(--iz-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.iz-card--interactive,
+	.iz-btn,
+	.iz-row {
+		transition: none;
+	}
+	.iz-card--interactive:hover,
+	.iz-btn--primary:hover:not(:disabled) {
+		transform: none;
+	}
 }
