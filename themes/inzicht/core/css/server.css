@@ -746,6 +746,58 @@ body {
 .iz-pill--cat-4, .iz-badge--cat-4 { background: var(--iz-cat-4-bg); color: var(--iz-cat-4-text); }
 .iz-pill--cat-5, .iz-badge--cat-5 { background: var(--iz-cat-5-bg); color: var(--iz-cat-5-text); }
 
+/* ── Filter chip ─────────────────────────────────────────────────────────
+   A *toggleable* filter, not a status: it is clickable, has an active state,
+   and its tone says which facet it filters. Backups and the org list both
+   grew their own copy of this; it is a distinct primitive from .iz-badge
+   (which is a passive label) and deserves its own name rather than being
+   forced into one. Tone modifiers colour the text, and tint the background
+   only when active. */
+.iz-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: var(--iz-fs-xs);
+	font-weight: 500;
+	padding: 4px 12px;
+	border: 1.5px solid transparent;
+	border-radius: var(--iz-radius-pill);
+	background: var(--iz-surface-subtle);
+	color: var(--iz-text-secondary);
+	cursor: pointer;
+	user-select: none;
+	white-space: nowrap;
+	transition: background-color var(--iz-transition), color var(--iz-transition),
+		border-color var(--iz-transition);
+}
+.iz-chip:hover { background: var(--iz-surface-inset); }
+.iz-chip:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--iz-surface), 0 0 0 4px var(--iz-accent);
+}
+.iz-chip--active {
+	font-weight: 600;
+	border-color: currentColor;
+	background: var(--iz-accent-bg);
+	color: var(--iz-accent-bg-text);
+}
+
+/* Toned chips: the tone tints only once active, so an inactive filter bar
+   stays quiet instead of reading as a row of status badges. */
+.iz-chip--success { color: var(--iz-success-text); }
+.iz-chip--success.iz-chip--active { background: var(--iz-success-bg); }
+.iz-chip--warning { color: var(--iz-warning-text); }
+.iz-chip--warning.iz-chip--active { background: var(--iz-warning-bg); }
+.iz-chip--danger { color: var(--iz-danger-text); }
+.iz-chip--danger.iz-chip--active { background: var(--iz-danger-bg); }
+.iz-chip--accent { color: var(--iz-accent-bg-text); }
+.iz-chip--accent.iz-chip--active { background: var(--iz-accent-bg); }
+.iz-chip--muted { color: var(--iz-text-secondary); }
+.iz-chip--muted.iz-chip--active { background: var(--iz-surface-inset); }
+.iz-chip--cat-5 { color: var(--iz-cat-5-text); }
+.iz-chip--cat-5.iz-chip--active { background: var(--iz-cat-5-bg); }
+
+
 /* Status dot, for pills that lead with one. Inherits the pill's text color. */
 .iz-dot {
 	width: 6px;
