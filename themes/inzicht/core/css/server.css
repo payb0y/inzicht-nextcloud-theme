@@ -837,7 +837,12 @@ button.iz-chip:hover { background: var(--iz-surface-inset); }
 	outline: none;
 	box-shadow: 0 0 0 2px var(--iz-surface), 0 0 0 4px var(--iz-accent);
 }
-.iz-chip--active {
+/* Qualified to match the base's specificity (0,2,0). The base had to be
+   raised to beat NC core's bare-<button> rules, and a modifier that stays at
+   0,1,0 then loses to its own base — which is how the active filter chip
+   briefly became indistinguishable from the inactive ones. */
+.iz-app .iz-chip--active,
+button.iz-chip--active {
 	font-weight: 600;
 	border-color: currentColor;
 	background: var(--iz-accent-bg);
@@ -846,18 +851,18 @@ button.iz-chip:hover { background: var(--iz-surface-inset); }
 
 /* Toned chips: the tone tints only once active, so an inactive filter bar
    stays quiet instead of reading as a row of status badges. */
-.iz-chip--success { color: var(--iz-success-text); }
-.iz-chip--success.iz-chip--active { background: var(--iz-success-bg); }
-.iz-chip--warning { color: var(--iz-warning-text); }
-.iz-chip--warning.iz-chip--active { background: var(--iz-warning-bg); }
-.iz-chip--danger { color: var(--iz-danger-text); }
-.iz-chip--danger.iz-chip--active { background: var(--iz-danger-bg); }
-.iz-chip--accent { color: var(--iz-accent-bg-text); }
-.iz-chip--accent.iz-chip--active { background: var(--iz-accent-bg); }
-.iz-chip--muted { color: var(--iz-text-secondary); }
-.iz-chip--muted.iz-chip--active { background: var(--iz-surface-inset); }
-.iz-chip--cat-5 { color: var(--iz-cat-5-text); }
-.iz-chip--cat-5.iz-chip--active { background: var(--iz-cat-5-bg); }
+.iz-app .iz-chip--success, button.iz-chip--success { color: var(--iz-success-text); }
+.iz-app .iz-chip--success.iz-chip--active, button.iz-chip--success.iz-chip--active { background: var(--iz-success-bg); }
+.iz-app .iz-chip--warning, button.iz-chip--warning { color: var(--iz-warning-text); }
+.iz-app .iz-chip--warning.iz-chip--active, button.iz-chip--warning.iz-chip--active { background: var(--iz-warning-bg); }
+.iz-app .iz-chip--danger, button.iz-chip--danger { color: var(--iz-danger-text); }
+.iz-app .iz-chip--danger.iz-chip--active, button.iz-chip--danger.iz-chip--active { background: var(--iz-danger-bg); }
+.iz-app .iz-chip--accent, button.iz-chip--accent { color: var(--iz-accent-bg-text); }
+.iz-app .iz-chip--accent.iz-chip--active, button.iz-chip--accent.iz-chip--active { background: var(--iz-accent-bg); }
+.iz-app .iz-chip--muted, button.iz-chip--muted { color: var(--iz-text-secondary); }
+.iz-app .iz-chip--muted.iz-chip--active, button.iz-chip--muted.iz-chip--active { background: var(--iz-surface-inset); }
+.iz-app .iz-chip--cat-5, button.iz-chip--cat-5 { color: var(--iz-cat-5-text); }
+.iz-app .iz-chip--cat-5.iz-chip--active, button.iz-chip--cat-5.iz-chip--active { background: var(--iz-cat-5-bg); }
 
 
 /* Status dot, for pills that lead with one. Inherits the pill's text color. */
@@ -993,6 +998,18 @@ button.iz-btn--icon {
 	background: var(--iz-surface);
 	color: var(--iz-accent);
 	box-shadow: var(--iz-shadow);
+}
+/* Stretch to the container (the modal's Trial/Standard picker) rather than
+   hugging its labels (the Grid/Table switcher). */
+.iz-segment--fill { display: flex; width: 100%; }
+.iz-segment--fill > .iz-btn { flex: 1; }
+/* The option is a real radio for keyboard and form semantics; the label is
+   what gets styled, so the input itself is hidden rather than removed. */
+.iz-segment input[type='radio'] { position: absolute; opacity: 0; pointer-events: none; }
+.iz-segment > label.iz-btn { cursor: pointer; user-select: none; }
+.iz-segment > label.iz-btn:focus-within {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--iz-surface), 0 0 0 4px var(--iz-accent);
 }
 
 
@@ -1451,6 +1468,192 @@ button.iz-btn--danger-quiet:hover:not(:disabled) {
 	padding: 1px 6px;
 	border-radius: var(--iz-radius-sm);
 	font-weight: 600;
+}
+
+
+/* ── Spinner ─────────────────────────────────────────────────────────────
+   Eight components each had their own rotating ring plus its own @keyframes,
+   differing only by accident: 10/12/18/32px, 0.7s vs 0.8s, and two different
+   colour schemes. One definition, three sizes.
+
+   Inherits currentColor, so it works inside a button without extra rules. */
+@keyframes iz-spin {
+	to { transform: rotate(360deg); }
+}
+.iz-spinner {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: iz-spin 0.8s linear infinite;
+	flex-shrink: 0;
+}
+.iz-spinner--sm { width: 10px; height: 10px; }
+.iz-spinner--lg {
+	width: 32px;
+	height: 32px;
+	border-width: 3px;
+	border-color: var(--iz-border);
+	border-top-color: var(--iz-accent);
+}
+/* None of the local copies honoured this. */
+@media (prefers-reduced-motion: reduce) {
+	.iz-spinner { animation-duration: 2.4s; }
+}
+
+
+/* ── Tabs ────────────────────────────────────────────────────────────────
+   Underlined tab strip. The page-level tabs and the org-detail tabs were
+   separate implementations of the same control, which is how a hover fix
+   applied to one silently missed the other.
+
+   The :hover rule is doubled up under .iz-tabs to reach specificity 0,2,0:
+   NC core styles bare <button> at `button:not(...):hover` (0,2,1) and
+   otherwise repaints these navy-on-pink. */
+.iz-tabs {
+	display: flex;
+	gap: 4px;
+	border-bottom: 1px solid var(--iz-border);
+}
+.iz-app .iz-tab,
+button.iz-tab {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	background: transparent;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+	padding: 10px 16px;
+	font-family: inherit;
+	font-size: var(--iz-fs-md);
+	font-weight: 600;
+	color: var(--iz-text-secondary);
+	cursor: pointer;
+	transition: color var(--iz-transition), border-color var(--iz-transition);
+}
+.iz-tabs .iz-tab:hover {
+	color: var(--iz-text);
+	background: transparent;
+}
+.iz-tabs .iz-tab--active,
+.iz-tabs .iz-tab--active:hover {
+	color: var(--iz-accent);
+	border-bottom-color: var(--iz-accent);
+	background: transparent;
+}
+.iz-app .iz-tab:focus-visible,
+button.iz-tab:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--iz-surface), 0 0 0 4px var(--iz-accent);
+	border-radius: var(--iz-radius-sm);
+}
+/* In dark, the accent used for the active label measures ~4.2:1 against the
+   panel — under AA for 13px text. The underline stays --iz-accent (a 2px
+   rule needs no text contrast); only the label lifts to the lighter accent
+   the palette already defines for readable pink on a dark surface. */
+[data-themes][data-theme-dark] .iz-tabs .iz-tab--active,
+[data-themes][data-theme-dark] .iz-tabs .iz-tab--active:hover {
+	color: var(--iz-accent-bg-text);
+}
+@media (prefers-color-scheme: dark) {
+	[data-themes][data-theme-default] .iz-tabs .iz-tab--active,
+	[data-themes][data-theme-default] .iz-tabs .iz-tab--active:hover {
+		color: var(--iz-accent-bg-text);
+	}
+}
+
+/* Page-level tabs read as a heading; section tabs stay sentence case. */
+.iz-tabs--display .iz-tab {
+	font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+/* Count bubble inside a tab. */
+.iz-tab__count {
+	font-size: var(--iz-fs-xs);
+	font-weight: 600;
+	padding: 1px 7px;
+	border-radius: var(--iz-radius);
+	background: var(--iz-surface-inset);
+	color: var(--iz-text-secondary);
+}
+.iz-tab--active .iz-tab__count {
+	background: var(--iz-accent-bg);
+	color: var(--iz-accent-bg-text);
+}
+
+
+/* ── Credential reveal ───────────────────────────────────────────────────
+   "Here is the new account's UID and password" — label / monospace value /
+   show / copy, with a warning that it won't be shown again. Duplicated
+   between the create-org modal and the member panel (25 rules between them).
+
+   The value is monospace and break-all on purpose: a generated password must
+   be readable character by character and must not silently truncate. */
+.iz-reveal {
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius);
+	padding: 14px;
+}
+.iz-reveal__heading {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: var(--iz-fs-md);
+	font-weight: 700;
+	color: var(--iz-success-text);
+	margin-bottom: 10px;
+}
+.iz-reveal__check {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: var(--iz-success-bg);
+	color: var(--iz-success-text);
+	flex-shrink: 0;
+}
+.iz-reveal__row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 0;
+	border-bottom: 1px solid var(--iz-border);
+	font-size: var(--iz-fs-md);
+}
+.iz-reveal__row:last-of-type { border-bottom: none; }
+.iz-reveal__row--actions {
+	justify-content: flex-end;
+	border-bottom: none;
+	padding-top: 8px;
+}
+.iz-reveal__label {
+	font-weight: 600;
+	color: var(--iz-text-secondary);
+	width: 90px;
+	flex-shrink: 0;
+}
+.iz-reveal__value {
+	flex: 1;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	color: var(--iz-text);
+	word-break: break-all;
+	min-width: 0;
+}
+.iz-reveal__warning {
+	margin: 12px 0 0;
+	font-size: var(--iz-fs-xs);
+	color: var(--iz-warning-text);
+	background: var(--iz-warning-bg);
+	border: 1px solid var(--iz-warning-text);
+	border-radius: var(--iz-radius-sm);
+	padding: 8px 10px;
 }
 
 
