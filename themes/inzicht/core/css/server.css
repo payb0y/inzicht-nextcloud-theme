@@ -666,10 +666,59 @@ body {
 	box-shadow: inset 0 0 0 2px var(--iz-accent);
 	border-radius: var(--iz-radius-lg);
 }
+/* The summary tints on hover. Expandable rows deliberately do NOT take the
+   -4px lift that .iz-row--card--clickable uses: a lift reads as "this
+   navigates somewhere", and these open in place. The card border firms up
+   instead. */
+.iz-row__header:hover {
+	background: var(--iz-surface-subtle);
+}
+.iz-row--expandable:hover {
+	border-color: var(--iz-border-strong);
+	box-shadow: var(--iz-shadow);
+	transform: none;
+}
+.iz-row--expanded {
+	border-color: var(--iz-accent);
+}
+
+/* Right-hand cluster of the summary: badges, icon buttons, then the chevron
+   last. margin-left:auto lives here rather than on the chevron so a row with
+   no actions still pushes the chevron to the right edge. */
+.iz-row__actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+	margin-left: auto;
+}
+
+/* The disclosure chevron. Always the LAST thing in the row, always on the
+   right, always a chevron-down rotating 180deg — not a caret rotating 90deg,
+   and not on the left. Three components each had a different answer to this;
+   this is the standard. */
+.iz-row__chevron {
+	flex-shrink: 0;
+	width: 14px;
+	height: 14px;
+	color: var(--iz-text-muted);
+	transition: transform 0.2s ease, color var(--iz-transition);
+}
+.iz-row__header:hover .iz-row__chevron {
+	color: var(--iz-accent);
+}
+.iz-row__chevron--open {
+	transform: rotate(180deg);
+	color: var(--iz-accent);
+}
+@media (prefers-reduced-motion: reduce) {
+	.iz-row__chevron { transition: none; }
+}
 .iz-row__detail {
 	border-top: 1px solid var(--iz-border);
 	padding: var(--iz-pad-card);
 	background: var(--iz-surface-subtle);
+	border-radius: 0 0 var(--iz-radius-lg) var(--iz-radius-lg);
 }
 
 
