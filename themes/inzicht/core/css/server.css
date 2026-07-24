@@ -587,6 +587,15 @@ body {
 	box-shadow: var(--iz-shadow);
 	padding: var(--iz-pad-card);
 }
+/* Nested inside a panel, where a shadow would be noise stacked on the panel's
+   own. Still sets its own surface: several of these relied on inheriting the
+   parent panel's white, which looks right until the card is moved somewhere
+   that isn't a panel — that is exactly how the org profile card ended up
+   showing the page gradient through it. */
+.iz-card--flat {
+	box-shadow: none;
+}
+
 .iz-card--interactive {
 	cursor: pointer;
 	transition: transform 0.3s var(--iz-ease), box-shadow 0.3s var(--iz-ease),
