@@ -734,6 +734,8 @@ body {
 }
 .iz-pill { border-radius: var(--iz-radius-pill); }
 .iz-badge { border-radius: var(--iz-radius-sm); }
+/* Larger pill for a primary status readout rather than a table cell. */
+.iz-pill--lg { font-size: var(--iz-fs-md); font-weight: 700; padding: 5px 12px; }
 
 .iz-pill--success, .iz-badge--success { background: var(--iz-success-bg); color: var(--iz-success-text); }
 .iz-pill--warning, .iz-badge--warning { background: var(--iz-warning-bg); color: var(--iz-warning-text); }
@@ -753,7 +755,8 @@ body {
    (which is a passive label) and deserves its own name rather than being
    forced into one. Tone modifiers colour the text, and tint the background
    only when active. */
-.iz-chip {
+.iz-app .iz-chip,
+button.iz-chip {
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
@@ -770,7 +773,8 @@ body {
 	transition: background-color var(--iz-transition), color var(--iz-transition),
 		border-color var(--iz-transition);
 }
-.iz-chip:hover { background: var(--iz-surface-inset); }
+.iz-app .iz-chip:hover,
+button.iz-chip:hover { background: var(--iz-surface-inset); }
 .iz-chip:focus-visible {
 	outline: none;
 	box-shadow: 0 0 0 2px var(--iz-surface), 0 0 0 4px var(--iz-accent);
@@ -1251,7 +1255,8 @@ input.iz-input--sm, select.iz-select--sm { padding: 4px 8px; font-size: var(--iz
 .iz-user-picker__result:last-child { border-bottom: none; }
 /* The round +. Sized to match .iz-btn--icon so a picker row and a toolbar
    line up. */
-.iz-user-picker__add {
+.iz-app .iz-user-picker__add,
+button.iz-user-picker__add {
 	width: 28px;
 	height: 28px;
 	flex-shrink: 0;
@@ -1267,11 +1272,13 @@ input.iz-input--sm, select.iz-select--sm { padding: 4px 8px; font-size: var(--iz
 	justify-content: center;
 	transition: background-color var(--iz-transition), color var(--iz-transition);
 }
-.iz-user-picker__add:hover:not(:disabled) {
+.iz-app .iz-user-picker__add:hover:not(:disabled),
+button.iz-user-picker__add:hover:not(:disabled) {
 	background: var(--iz-accent);
 	color: var(--iz-accent-text);
 }
-.iz-user-picker__add:disabled { opacity: 0.5; cursor: not-allowed; }
+.iz-app .iz-user-picker__add:disabled,
+button.iz-user-picker__add:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
 /* ── Modal confirm block ─────────────────────────────────────────────────
@@ -1299,6 +1306,93 @@ input.iz-input--sm, select.iz-select--sm { padding: 4px 8px; font-size: var(--iz
 	height: 1px;
 	opacity: 0;
 	pointer-events: none;
+}
+
+
+/* ── Close button ────────────────────────────────────────────────────────
+   The bare "x" on modals, inline panels and dismissible forms. Six
+   components had their own; they differed only in glyph size. */
+.iz-app .iz-close,
+button.iz-close {
+	background: transparent;
+	border: 0;
+	line-height: 1;
+	font-size: var(--iz-fs-xl);
+	color: var(--iz-text-muted);
+	cursor: pointer;
+	padding: 2px 8px;
+	border-radius: var(--iz-radius-sm);
+	transition: background-color var(--iz-transition), color var(--iz-transition);
+}
+.iz-app .iz-close:hover:not(:disabled),
+button.iz-close:hover:not(:disabled) {
+	background: var(--iz-surface-subtle);
+	color: var(--iz-text);
+}
+.iz-app .iz-close:focus-visible,
+button.iz-close:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--iz-surface), 0 0 0 4px var(--iz-accent);
+}
+.iz-app .iz-close:disabled,
+button.iz-close:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Inline (inside a sub-panel header) rather than on a modal. */
+.iz-app .iz-close--sm,
+button.iz-close--sm { font-size: var(--iz-fs-lg); padding: 0 6px; }
+
+
+/* ── Quiet toned buttons ─────────────────────────────────────────────────
+   `.iz-btn` with the tone carried by the text instead of a filled
+   background — the "Try again" / "Retry" affordance, which five components
+   had each written out. Pair with .iz-btn--sm for the inline version. */
+.iz-app .iz-btn--accent,
+button.iz-btn--accent {
+	color: var(--iz-accent);
+	border-color: var(--iz-border-strong);
+	background: var(--iz-surface);
+}
+.iz-app .iz-btn--accent:hover:not(:disabled),
+button.iz-btn--accent:hover:not(:disabled) {
+	background: var(--iz-accent-bg);
+	border-color: var(--iz-accent);
+	color: var(--iz-accent-bg-text);
+}
+.iz-app .iz-btn--danger-quiet,
+button.iz-btn--danger-quiet {
+	color: var(--iz-danger-text);
+	border-color: var(--iz-danger-bg);
+	background: transparent;
+}
+.iz-app .iz-btn--danger-quiet:hover:not(:disabled),
+button.iz-btn--danger-quiet:hover:not(:disabled) {
+	background: var(--iz-danger-bg);
+	border-color: var(--iz-danger);
+	color: var(--iz-danger-text);
+}
+
+
+/* ── Inset ───────────────────────────────────────────────────────────────
+   Dashed, recessed container for content that is provisional: a submit
+   preview, an options block, a "this is what will happen" summary. Same
+   material as .iz-empty but left-aligned and compact, because it holds real
+   content rather than a "nothing here" message. */
+.iz-inset {
+	background: var(--iz-surface-subtle);
+	border: 1px dashed var(--iz-border-strong);
+	border-radius: var(--iz-radius);
+	padding: 10px 12px;
+}
+
+
+/* ── Mark ────────────────────────────────────────────────────────────────
+   Highlights the figure a drill-down was filtered by, so the number the
+   user clicked is findable in the row they land on. */
+.iz-mark {
+	background: var(--iz-warning-bg);
+	color: var(--iz-warning-text);
+	padding: 1px 6px;
+	border-radius: var(--iz-radius-sm);
+	font-weight: 600;
 }
 
 
