@@ -1212,8 +1212,16 @@ input.iz-input--sm, select.iz-select--sm { padding: 4px 8px; font-size: var(--iz
 	background: var(--iz-border);
 	border-radius: var(--iz-radius-pill);
 	overflow: hidden;
-	flex: 1;
+	/* NEVER put flex-grow here. In a row container it reads as "fill the
+	   remaining width", which is what a couple of callers want — but in a
+	   COLUMN container it applies to the height instead, overriding the 6px
+	   above: the track then collapses to 0 or balloons into a fat pill
+	   (a rounded track + a short fill renders as a circle). Both were shipped.
+	   Callers that need the horizontal fill opt in with --grow. */
+	flex-shrink: 0;
 }
+/* Fill the remaining width when the meter sits in a ROW beside a label. */
+.iz-meter--grow { flex: 1 1 auto; }
 .iz-meter--thin { height: 4px; }
 .iz-meter__fill {
 	height: 100%;
