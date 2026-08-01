@@ -1178,6 +1178,38 @@ button.iz-btn:hover:not(:disabled) {
 	background: var(--iz-surface-subtle);
 	border-color: var(--iz-accent);
 }
+/* Hold each variant's own background while focused.
+
+   Nextcloud core carries
+     button:not(.button-vue, [class^="vs__"]):focus { background: var(--color-primary-element-light) }
+   at specificity (0,2,1), which outranks the (0,2,0) variant rules below and
+   repaints a focused .iz-btn in the pale primary tint — a red danger button
+   turns pink with white-on-pink text the moment it takes focus, which is
+   exactly when a confirmation dialog focuses its action. :not(:hover) so the
+   hover treatment still wins when the pointer is over the button. */
+.iz-app .iz-btn:focus:not(:hover),
+button.iz-btn:focus:not(:hover) {
+	background: var(--iz-surface);
+}
+.iz-app .iz-btn--primary:focus:not(:hover),
+button.iz-btn--primary:focus:not(:hover) {
+	background: var(--iz-accent);
+}
+.iz-app .iz-btn--danger:focus:not(:hover),
+button.iz-btn--danger:focus:not(:hover) {
+	background: var(--iz-danger);
+}
+.iz-app .iz-btn--accent:focus:not(:hover),
+button.iz-btn--accent:focus:not(:hover) {
+	background: var(--iz-accent);
+}
+.iz-app .iz-btn--ghost:focus:not(:hover),
+.iz-app .iz-btn--plain:focus:not(:hover),
+button.iz-btn--ghost:focus:not(:hover),
+button.iz-btn--plain:focus:not(:hover) {
+	background: transparent;
+}
+
 .iz-app .iz-btn:focus-visible,
 button.iz-btn:focus-visible {
 	outline: none;
