@@ -95,7 +95,7 @@ Sections 1–7 restyle **Nextcloud core**. Section 8 is different: it's a set of
 classes (`.iz-panel`, `.iz-card`, `.iz-row`, `.iz-table`, `.iz-pill`, `.iz-badge`,
 `.iz-btn`, `.iz-input`, `.iz-label`, `.iz-metric`, `.iz-pagination`, `.iz-empty`,
 `.iz-modal`, …) plus an `--iz-*` token set, used by the **In Zicht custom apps**
-(`superadminpage`, `adminpage`, `employee-dashboard`). It targets nothing in stock NC,
+(`superadminpage`, `adminpage`, `employee_dashboard`). It targets nothing in stock NC,
 so it's inert on core pages.
 
 It lives here rather than in each app because:
