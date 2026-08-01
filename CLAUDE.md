@@ -27,6 +27,10 @@ themes/inzicht/
   core/css/server.css       ALL styles, one file (see "Single-file CSS" below).
   core/fonts/*.woff2        self-hosted Inter + Space Grotesk (no CDN → CSP-safe).
   core/img/Logo.png         the In Zicht logo (bundled; set as NC logo via occ, see Deploy).
+  core/js/iz-chart.js       canonical Chart.js theme bridge. NOT loaded by the theme — a
+                            theme cannot add scripts to a page. Apps VENDOR it to
+                            src/lib/izChart.js; change it here and copy to every app in
+                            the same commit.
 install.sh                  installer for a mounted/filesystem Nextcloud root.
 deploy-docker.sh            installer for a Dockerized Nextcloud (SAFE copy — see "docker cp trap").
 README.md                   user-facing install/update/uninstall docs.

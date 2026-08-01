@@ -513,6 +513,280 @@ body {
 	}
 }
 
+/* ===== App token bridge =====
+
+   Our apps were written against generic names (--bg-card, --color-text-primary,
+   --shadow-card, --chart-1, …) before the .iz-* layer existed. Each app carried
+   its own copy of the mapping in its root component's <style>, which meant three
+   copies drifting apart — and an app that forgot one name got an *undefined*
+   custom property, which invalidates the whole declaration rather than falling
+   back, so the colour silently disappeared. That is exactly how adminpage's
+   public share view lost its palette.
+
+   Adding `iz-app` to an app's root element now supplies the whole set. Apps
+   should delete their local copies. Prefer the .iz-* names in new code — these
+   aliases exist so unconverted components keep working, and a name disappears
+   from here only once no app references it.
+
+   NOTE: --color-border is deliberately absent. It is a Nextcloud variable the
+   theme already defines in section 3; redefining it in terms of --iz-border
+   (which is itself var(--color-border)) would be a cycle, and the whole chain
+   would resolve to nothing. */
+.iz-app {
+	/* surfaces */
+	--bg-page: var(--image-background);
+	--bg-card: var(--iz-surface);
+	--bg-subtle: var(--iz-surface-subtle);
+	--bg-inset: var(--iz-surface-inset);
+
+	/* text */
+	--color-text-primary: var(--iz-text);
+	--color-text-secondary: var(--iz-text-secondary);
+	--color-text-muted: var(--iz-text-muted);
+
+	/* borders (see NOTE above re --color-border) */
+	--color-border-strong: var(--iz-border-strong);
+
+	/* accent */
+	--accent: var(--iz-accent);
+	--accent-hover: var(--iz-accent-hover);
+	--accent-strong: var(--iz-cat-2);
+	--accent-bg: var(--iz-accent-bg);
+	--accent-on-bg: var(--iz-accent-bg-text);
+
+	/* radii */
+	--radius-card: var(--iz-radius-card);
+	--radius-el: var(--iz-radius);
+	--radius-sm: var(--iz-radius-sm);
+	--radius-lg: var(--iz-radius-lg);
+	--radius-pill: var(--iz-radius-pill);
+
+	/* elevation */
+	--shadow-card: var(--iz-shadow);
+	--shadow-card-hover: var(--iz-shadow-lift);
+
+	/* status — semantic solids plus the tint/text pairs badges use */
+	--color-danger: var(--iz-danger);
+	--color-danger-text: var(--iz-danger-text);
+	--color-danger-bg: var(--iz-danger-bg);
+	--color-warning-text: var(--iz-warning-text);
+	--color-warning-bg: var(--iz-warning-bg);
+	--color-success: var(--iz-success);
+	--color-success-text: var(--iz-success-text);
+	--color-success-bg: var(--iz-success-bg);
+	--color-badge-danger-bg: var(--iz-danger-bg);
+	--color-badge-danger-text: var(--iz-danger-text);
+	--color-badge-warning-bg: var(--iz-warning-bg);
+	--color-badge-warning-text: var(--iz-warning-text);
+	--color-badge-success-bg: var(--iz-success-bg);
+	--color-badge-success-text: var(--iz-success-text);
+
+	/* chart palette — series 1 is the accent */
+	--chart-1: var(--iz-cat-1);
+	--chart-2: var(--iz-cat-2);
+	--chart-3: var(--iz-cat-3);
+	--chart-4: var(--iz-cat-4);
+	--chart-5: var(--iz-cat-5);
+	--chart-5-bg: var(--iz-cat-5-bg);
+
+	/* spacing — the apps' own scale, kept because their layout rules use it */
+	--spacing-xs: 4px;
+	--spacing-sm: 8px;
+	--spacing-md: 16px;
+	--spacing-lg: 24px;
+	--spacing-xl: 32px;
+	--spacing-2xl: 40px;
+}
+
+/* ===== .iz-kpi — the KPI card =====
+
+   The headline card at the top of a dashboard: an eyebrow header with an icon,
+   one big figure, a chart, a short breakdown, and an optional footer note.
+
+   The point of putting it here is the ALIGNMENT CONTRACT. Four of these sit in
+   a row and every horizontal band has to line up across cards whose content
+   differs: the header strip, the figure baseline, the chart, and the footer. In
+   each app that was four sets of magic numbers kept in sync by hand, and they
+   drifted every time a card gained a row. The fixed heights below are that
+   contract, in one place.
+
+   Anatomy:
+     .iz-kpi
+       .iz-kpi__header   > .iz-kpi__icon + .iz-kpi__eyebrow + (right-aligned action)
+       .iz-kpi__hero     > .iz-figure + .iz-kpi__hero-label
+       .iz-kpi__chart    > canvas
+       .iz-kpi__rows     > .iz-kpi__row * n  (button or div)
+       .iz-kpi__footer   > free content, one band tall
+
+   The card is a grid with the chart region flexible, so cards with three rows
+   and cards with five still share a footer line. */
+.iz-kpi {
+	display: flex;
+	flex-direction: column;
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius-card);
+	box-shadow: var(--iz-shadow);
+	padding: var(--iz-pad-card);
+	min-width: 0; /* pair with minmax(0, 1fr) tracks — see the note on __rows */
+}
+
+.iz-kpi__header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 20px;
+	margin-bottom: 12px;
+}
+
+.iz-kpi__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	flex-shrink: 0;
+	border-radius: var(--iz-radius-sm);
+	/* --iz-accent-bg-text, NOT --iz-accent-text: the tint is a light wash, and
+	   the white "on solid accent" tone disappears on it. */
+	background: var(--iz-accent-bg);
+	color: var(--iz-accent-bg-text);
+}
+
+.iz-kpi__eyebrow {
+	font-size: var(--iz-fs-xs);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--iz-text-secondary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Any action in the header sits hard right and must not stretch the strip.
+   Nextcloud core puts min-height: 34px on bare buttons, which is taller than
+   this header — a parent min-height cannot cap a taller child, so the reset
+   has to happen on the button itself. */
+.iz-kpi__header > .iz-btn,
+.iz-kpi__header > button {
+	margin-left: auto;
+	flex-shrink: 0;
+	min-height: 0;
+	white-space: nowrap;
+}
+
+.iz-kpi__hero {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	min-height: 68px;
+	margin-bottom: 4px;
+}
+
+.iz-kpi__hero-label {
+	font-size: var(--iz-fs-md);
+	color: var(--iz-text-secondary);
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Fixed box so all four charts share a baseline regardless of chart type.
+   112px is the donut diameter the cards were tuned to; the extra 8px of box
+   leaves room for Chart.js's hover expansion without nudging the layout. */
+.iz-kpi__chart {
+	position: relative;
+	width: 120px;
+	height: 120px;
+	margin: 0 auto 12px;
+	flex-shrink: 0;
+}
+
+.iz-kpi__chart > canvas {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+/* Takes the slack so the footer lands on the same line in every card. */
+.iz-kpi__rows {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1;
+	min-width: 0;
+}
+
+.iz-kpi__row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 3px 4px;
+	border: none;
+	border-radius: var(--iz-radius-sm);
+	background: none;
+	font-family: inherit;
+	font-size: var(--iz-fs-sm);
+	color: var(--iz-text);
+	text-align: left;
+	transition: background-color var(--iz-transition);
+}
+
+button.iz-kpi__row {
+	cursor: pointer;
+}
+
+button.iz-kpi__row:hover {
+	background: var(--iz-surface-subtle);
+}
+
+.iz-kpi__row-label {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--iz-text-secondary);
+}
+
+.iz-kpi__row-value {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--iz-text);
+}
+
+/* Second line under a row label (e.g. "3 pub · 0 priv"). */
+.iz-kpi__row-sub {
+	display: block;
+	font-size: var(--iz-fs-micro);
+	color: var(--iz-text-muted);
+}
+
+/* One band tall, so Projects' "N with issues", Tasks' oldest-task line and
+   Timeline's delivery rail all sit on the same row across the strip. */
+.iz-kpi__footer {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 34px;
+	margin-top: 10px;
+	padding: 6px 10px;
+	border-radius: var(--iz-radius-sm);
+	background: var(--iz-surface-subtle);
+	font-size: var(--iz-fs-xs);
+	color: var(--iz-text-secondary);
+}
+
+.iz-kpi__empty {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--iz-text-muted);
+	font-size: var(--iz-fs-sm);
+}
+
 /* Headings and figures use Space Grotesk, like the rest of the theme. */
 .iz-panel__title,
 .iz-card__title,
