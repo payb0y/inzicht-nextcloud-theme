@@ -1303,6 +1303,7 @@ button.iz-btn--plain:hover:not(:disabled) {
 button.iz-btn--sm {
 	padding: 4px 10px;
 	font-size: var(--iz-fs-xs);
+	min-height: 0; /* see the note on .iz-btn--icon */
 }
 .iz-app .iz-btn--icon,
 button.iz-btn--icon {
@@ -1310,6 +1311,12 @@ button.iz-btn--icon {
 	width: 28px;
 	height: 28px;
 	flex-shrink: 0;
+	/* NC core puts min-height: var(--default-clickable-area) — 34px — on every
+	   bare button, and min-height beats height, so without this an icon button
+	   renders 28x34 and core's 7.5px/12px padding crushes the glyph inside it
+	   to a couple of pixels wide. A parent cannot cap a taller child, so the
+	   reset has to live here. */
+	min-height: 0;
 }
 
 /* Segmented control (view switchers, mode pickers). */
