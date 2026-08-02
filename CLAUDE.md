@@ -18,6 +18,13 @@ This repo is the **source of truth** and the deployable artifact (`git pull` on 
 server, then run the installer). It is NOT a Nextcloud checkout — there's no PHP app,
 just the theme folder + install scripts.
 
+## Consuming this theme from an app
+
+`USING-THE-THEME.md` in this repo is the canonical guide for the apps
+(`adminpage`, `superadminpage`, `employee_dashboard`). Their `CLAUDE.md` files
+point at it rather than repeating it, so **that is the file to edit** when a
+rule changes — not three copies.
+
 ## Repository layout
 
 ```
