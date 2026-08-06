@@ -1,6 +1,7 @@
 # Using the In Zicht theme in an app
 
-Canonical guidance for `adminpage`, `superadminpage` and `employee_dashboard`.
+Canonical guidance for `adminpage`, `superadminpage`, `employee_dashboard` and
+`organization`.
 Each app's `CLAUDE.md` points here rather than repeating it — this file is the
 one to edit.
 
@@ -173,6 +174,9 @@ vendored into each app and **must be updated everywhere in the same change**:
   `confirm()`; native dialogs cannot be themed. The parent owns the busy flag
   and the error string, and the dialog never closes itself, so a failed action
   stays open with its reason attached.
+  **`organization` is Vue 3 and cannot import this Vue 2 SFC**, so it carries a
+  ported fourth copy at `src/components/ConfirmDialog.vue` with the same
+  contract. A change here has to be ported into it, not copied.
 - **`src/lib/izChart.js`** — the Chart.js bridge, canonical copy at
   `themes/inzicht/core/js/iz-chart.js`. Carries `themeColor()`,
   `tooltipTheme()`, `chartPalette()` and `onFillColor()`. The tooltip rule
