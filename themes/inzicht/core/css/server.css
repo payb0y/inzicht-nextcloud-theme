@@ -1596,8 +1596,200 @@ input.iz-input--sm, select.iz-select--sm { padding: 4px 8px; font-size: var(--iz
 .iz-meter__fill--accent { background: var(--iz-accent); }
 /* No reading available (null percent) — a visible but inert track fill. */
 .iz-meter__fill--neutral { background: var(--iz-border-strong); }
+/* No percentage to report at all — a queued job that has not started, where
+   any width would be a lie. Pulse the full track instead. Callers had begun
+   writing their own keyframes for this. */
+.iz-meter--indeterminate .iz-meter__fill {
+	width: 100%;
+	animation: iz-pulse 1.6s ease-in-out infinite;
+}
+@keyframes iz-pulse {
+	0%, 100% { opacity: 0.25; }
+	50% { opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
 	.iz-meter__fill { transition: none; }
+	.iz-meter--indeterminate .iz-meter__fill { animation: none; opacity: 0.6; }
+}
+
+
+/* ── Key–value: the fields of one record ─────────────────────────────────
+   Nextcloud core ships these two rules globally, and they are the reason a
+   plain <dl> has never looked right in any of these apps:
+
+       dt, dd { display: inline-block; padding: 12px; padding-inline-start: 0 }
+       dt     { width: 130px; white-space: nowrap; text-align: end }
+
+   So every label is forced into a right-aligned 130px gutter with 12px of
+   padding, whatever the app intended — measured at 104px of row height for a
+   two-line pair. Four consumers each worked around it differently
+   (`members-panel__detail-*`, `org-detail__profile-*`, `proj-details__info-*`
+   and two more in `organization`), so the same record read differently
+   depending on which panel drew it. Undoing core belongs here, once.
+
+   Two forms, both genuinely needed: the default stacks label over value and
+   flows into as many columns as fit — right for a wide row detail — while
+   `--rows` puts the label left of the value in a fixed two-column list, right
+   inside a narrow card. Works with <dl>/<dt>/<dd> or with plain divs and
+   spans; the reset covers both.
+
+   `--rows` takes the label and value as DIRECT children, with no item
+   wrapper; the default form needs the wrapper to stack a pair. */
+.iz-kv {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: var(--iz-gap-tight);
+	margin: 0;
+}
+.iz-kv--rows {
+	grid-template-columns: minmax(90px, auto) 1fr;
+	gap: 6px 12px;
+	align-items: baseline;
+}
+.iz-kv__item {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+}
+/* The item may need the full row for a long value such as a filename. */
+.iz-kv__item--wide { grid-column: 1 / -1; }
+/* Neutralises core's dt/dd rules quoted above. Keep all five properties. */
+.iz-kv__label,
+.iz-kv__value {
+	display: block;
+	width: auto;
+	padding: 0;
+	margin: 0;
+	text-align: start;
+	white-space: normal;
+}
+.iz-kv__label {
+	font-size: var(--iz-fs-micro);
+	font-weight: 700;
+	color: var(--iz-text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+/* --rows reads as a sentence, not as a column of shouting eyebrows. */
+.iz-kv--rows > .iz-kv__label {
+	font-size: var(--iz-fs-md);
+	font-weight: 400;
+	text-transform: none;
+	letter-spacing: 0;
+}
+.iz-kv__value {
+	font-size: var(--iz-fs-md);
+	color: var(--iz-text);
+	overflow-wrap: anywhere;
+}
+.iz-kv__value--mono {
+	font-family: var(--iz-font-mono);
+	font-size: var(--iz-fs-sm);
+}
+/* An absent value is a fact; say so quietly rather than leaving a blank. */
+.iz-kv__value--unset {
+	color: var(--iz-text-muted);
+	font-style: italic;
+}
+
+
+/* ── Steps: one job's execution plan ─────────────────────────────────────
+   An ordered list of units of work, each with its own status — what backup,
+   rollback and account-handover jobs all return. Every step exists from the
+   moment the job is created, so this is the whole plan, not a progress log:
+   it belongs in a bordered well that reads as one object.
+
+   Pair the status with `.iz-pill` + `.iz-dot`. The note wraps onto its own
+   line via flex-basis, so a skip reason or an error sits under its step
+   rather than squeezing the name. */
+.iz-steps {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius);
+	overflow: hidden;
+}
+.iz-steps__step {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	padding: var(--iz-pad-cell);
+	border-bottom: 1px solid var(--iz-border);
+}
+.iz-steps__step:last-child { border-bottom: none; }
+.iz-steps__name {
+	flex: 1;
+	min-width: 0;
+	font-size: var(--iz-fs-md);
+	color: var(--iz-text);
+	overflow-wrap: anywhere;
+}
+.iz-steps__time {
+	flex-shrink: 0;
+	font-size: var(--iz-fs-xs);
+	color: var(--iz-text-muted);
+	font-variant-numeric: tabular-nums;
+}
+.iz-steps__note {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: var(--iz-fs-sm);
+	color: var(--iz-text-secondary);
+}
+.iz-steps__note--error { color: var(--iz-danger-text); }
+
+
+/* ── Log: an append-only activity stream ─────────────────────────────────
+   Level, time, message. Emitted as a flat three-column grid rather than one
+   wrapper element per line, so the timestamps stay column-aligned all the way
+   down — the one idea worth keeping from the hand-rolled version in
+   superadminpage's HandoverPanel. The height cap is part of the primitive: a
+   log grows without bound and would otherwise push the rest of a detail panel
+   off the screen. */
+.iz-log {
+	display: grid;
+	grid-template-columns: auto auto 1fr;
+	align-items: baseline;
+	gap: 8px 12px;
+	margin: 0;
+	padding: var(--iz-pad-cell);
+	max-height: 280px;
+	overflow-y: auto;
+	background: var(--iz-surface);
+	border: 1px solid var(--iz-border);
+	border-radius: var(--iz-radius);
+}
+.iz-log__time {
+	font-size: var(--iz-fs-xs);
+	color: var(--iz-text-muted);
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.iz-log__message {
+	font-size: var(--iz-fs-md);
+	color: var(--iz-text-secondary);
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+
+/* ── Code: a raw payload someone may need to read or copy ────────────────
+   Job results and event payloads. Core resets <pre> to inherit the body font,
+   so monospace has to be re-stated; it comes from the token, not a literal. */
+.iz-code {
+	margin: 0;
+	padding: 10px 12px;
+	max-height: 240px;
+	overflow: auto;
+	font-family: var(--iz-font-mono);
+	font-size: var(--iz-fs-sm);
+	color: var(--iz-text);
+	background: var(--iz-surface-inset);
+	border-radius: var(--iz-radius-sm);
 }
 
 
