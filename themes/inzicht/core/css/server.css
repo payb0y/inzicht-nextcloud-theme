@@ -1360,12 +1360,25 @@ input.iz-input, select.iz-select, textarea.iz-textarea {
 	padding: 7px 12px;
 	font-family: inherit;
 	font-size: var(--iz-fs-md);
+	/* Explicit, because `normal` resolves differently per control. Matches
+	   .iz-btn's 1.4. */
+	line-height: 1.4;
 	color: var(--iz-text);
 	background: var(--iz-surface);
 	border: 1px solid var(--iz-border-strong);
 	border-radius: var(--iz-radius);
 	transition: border-color var(--iz-transition), box-shadow var(--iz-transition);
 }
+/* A <select> reserves internal room for its dropdown arrow that computed
+   padding does not report, so with height:auto it rendered 36px against a
+   34px <input> and the two sat 2px out of line in the same toolbar row.
+   Pinning the height makes the pair interchangeable in a row; textarea is
+   excluded because it has to grow. */
+.iz-app .iz-input, .iz-app .iz-select,
+input.iz-input, select.iz-select {
+	height: 34px;
+}
+
 .iz-app .iz-input:focus, .iz-app .iz-select:focus, .iz-app .iz-textarea:focus,
 input.iz-input:focus, select.iz-select:focus, textarea.iz-textarea:focus {
 	outline: none;
