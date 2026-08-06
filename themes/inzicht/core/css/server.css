@@ -470,6 +470,16 @@ body {
 	--iz-fs-xl: 20px;      /* metric values */
 	--iz-fs-2xl: 24px;     /* page-level figures */
 
+	/* — the one monospace stack —
+	   For identifiers a person may have to read out or retype: UIDs, artifact
+	   filenames, generated passwords. It was written out by hand twelve times
+	   across the four apps in three different forms — `ui-monospace,
+	   SFMono-Regular, Menlo, monospace`, `'SF Mono', Monaco, 'Cascadia Code',
+	   Consolas, monospace`, and a bare `monospace` — so the same UID rendered
+	   in a different face depending on which panel showed it. This file used
+	   the first of those in .iz-reveal__value and now defers to the token too. */
+	--iz-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
 	/* — motion — */
 	--iz-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	--iz-transition: 0.15s ease;
@@ -2000,7 +2010,7 @@ button.iz-tab:focus-visible {
 }
 .iz-reveal__value {
 	flex: 1;
-	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-family: var(--iz-font-mono);
 	color: var(--iz-text);
 	word-break: break-all;
 	min-width: 0;

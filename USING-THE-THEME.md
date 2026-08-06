@@ -52,7 +52,10 @@ the theme.
 - **Chrome → primitive. Layout → local.** Surface, border, radius, shadow, type
   scale, hover and focus come from `.iz-*`. Grid tracks, column widths and gaps
   between regions stay in the component.
-- **Never hardcode a colour or a font size.** Use a token.
+- **Never hardcode a colour, a font size or a font family.** Use a token.
+  Monospace is `var(--iz-font-mono)` — the stack had been written out by hand
+  twelve times across the four apps in three different forms, so the same UID
+  rendered in a different face depending on which panel showed it.
 - **Never put a layout property in a shared primitive.** `flex-grow` on
   `.iz-meter` meant "fill the width" in a row and "stretch the height" in a
   column; it shipped a collapsed bar in one place and a fat circle in another.
@@ -200,3 +203,31 @@ vendored into each app and **must be updated everywhere in the same change**:
 
 Never edit the deployed copy inside the container or under
 `nextcloud-docker-dev/workspace/`; both are outputs.
+
+---
+
+## 12. Known gaps
+
+Three shapes every consumer hand-rolls. They are listed here so the next person
+adds the primitive instead of writing a fifth copy — but each needs a decision
+about the right geometry first, which is why none of them exists yet.
+
+- **Key–value detail grid.** Four names for one pattern:
+  `members-panel__detail-*`, `org-detail__profile-*`, `proj-details__info-*`,
+  and two more in `organization`'s backup and handover tabs. They disagree on
+  whether the label sits *above* the value (better for a wide row detail) or
+  *left of* it (better in a narrow card), which is the decision to make before
+  naming it `.iz-kv`. Until then use `.iz-label` for the label and keep only
+  the grid tracks local — that at least makes the labels agree.
+- **Step / timeline list.** A job with ordered steps, each with its own status.
+  `organization` has one in `src/components/jobs/JobSteps.vue` built from
+  `.iz-pill` + `.iz-dot`; superadminpage's `HandoverPanel` has a flat
+  three-column event grid. Neither is general yet.
+- **Indeterminate meter.** `.iz-meter` is determinate only, and `iz-spin` is
+  the only keyframes in the file. A queued job with no percentage to report
+  currently needs a local animation.
+
+`.iz-metrics` / `.iz-metric` is a fourth case, but inverted: it exists and is
+correct, and no sibling calls it — `superadminpage/KpiCard.vue` retypes it by
+hand, minus the `font-variant-numeric: tabular-nums` that stops a polled
+number jittering. Reach for the primitive.
