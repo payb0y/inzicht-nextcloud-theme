@@ -1,0 +1,6 @@
+{ "translations": {
+    "If you use third party applications to connect to Nextcloud, please make sure to create and configure an app password for each before enabling second factor authentication." : "If you use third party applications to connect to In Zicht, please make sure to create and configure an app password for each before enabling second factor authentication.",
+    "Nextcloud help & privacy resources" : "In Zicht help & privacy resources",
+    "Nextcloud help overview" : "In Zicht help overview"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}

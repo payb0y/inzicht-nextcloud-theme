@@ -47,6 +47,23 @@ themes/inzicht/
                             because URLGenerator::imagePath checks themes/<theme>/
                             before core; the resolved path is cached in Redis WITHOUT
                             a cache-buster, so flush Redis if a stock icon sticks.
+  apps/settings/templates/settings/admin/overview.php
+                            template override: replaces the HARDCODED "Nextcloud Hub 26
+                            Spring" version line with getName(). Template\Base::
+                            getAppTemplateDirs() checks themes/<theme>/apps/<app>/templates/
+                            first. Byte-identical to stock apart from that line —
+                            RE-SYNC against stock after every NC upgrade.
+  apps/settings/templates/settings/personal/development.notice.php
+                            template override, intentionally empty: removes the "Reasons
+                            to use Nextcloud" link + Nextcloud community/social panel
+                            from Settings → Personal info.
+  apps/settings/l10n/{en,nl}.json
+                            per-key translation overrides (L10N\Factory merges theme
+                            l10n AFTER the app's own): the 2FA "connect to Nextcloud"
+                            hint and the two "Nextcloud help" strings. Works for en even
+                            though apps ship no en.json. Only PHP-rendered strings can
+                            be overridden this way — strings compiled into JS bundles
+                            cannot.
   core/js/iz-chart.js       canonical Chart.js theme bridge. NOT loaded by the theme — a
                             theme cannot add scripts to a page. Apps VENDOR it to
                             src/lib/izChart.js; change it here and copy to every app in
