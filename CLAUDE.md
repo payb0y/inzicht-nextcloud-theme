@@ -29,11 +29,24 @@ rule changes — not three copies.
 
 ```
 themes/inzicht/
-  defaults.php              empty `class OC_Theme {}` — keeps NC's product name/footer/logo text.
-                            Intentionally empty: the theme changes LOOK only, not branding strings.
+  defaults.php              `class OC_Theme` with the FULL product identity: getName/
+                            getTitle/getEntity/getSlogan/getProductName ("In Zicht" /
+                            "Samen projecten inzichtelijk"), base + sync/mobile client
+                            URLs (inzicht-new.loket.site), empty getiTunesAppId (kills
+                            the Apple smart banner), empty getLongFooter (drops the
+                            login card). getDocBaseUrl is deliberately NOT overridden —
+                            help still points at docs.nextcloud.com. NOTE: Theming-app
+                            appconfig wins over these; keep its text fields empty.
   core/css/server.css       ALL styles, one file (see "Single-file CSS" below).
   core/fonts/*.woff2        self-hosted Inter + Space Grotesk (no CDN → CSP-safe).
   core/img/Logo.png         the In Zicht logo (bundled; set as NC logo via occ, see Deploy).
+  core/img/favicon.ico      multi-res favicon built from the hexagon mark.
+  core/img/favicon-touch.png  180x180 touch icon on the light-pink ground.
+  core/img/favicon-mask.svg   monochrome pinned-tab mask (hexagon ring).
+  core/img/manifest.json    PWA manifest named "In Zicht". These four are served
+                            because URLGenerator::imagePath checks themes/<theme>/
+                            before core; the resolved path is cached in Redis WITHOUT
+                            a cache-buster, so flush Redis if a stock icon sticks.
   core/js/iz-chart.js       canonical Chart.js theme bridge. NOT loaded by the theme — a
                             theme cannot add scripts to a page. Apps VENDOR it to
                             src/lib/izChart.js; change it here and copy to every app in

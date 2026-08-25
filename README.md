@@ -11,7 +11,13 @@ Built and verified against **Nextcloud 34**. See "Version compatibility" below.
 
 ```
 themes/inzicht/            <- the theme (copy this into <nextcloud>/themes/)
-  defaults.php             empty OC_Theme (keeps NC's product name/footer)
+  defaults.php             OC_Theme with the full In Zicht product identity:
+                           name/title/entity/slogan/product name, base + client
+                           URLs, no iTunes banner, empty long footer
+  core/img/favicon.ico     In Zicht favicon (multi-res, from the hexagon mark)
+  core/img/favicon-touch.png  180x180 touch icon (light-pink ground)
+  core/img/favicon-mask.svg   monochrome pinned-tab mask (hexagon ring)
+  core/img/manifest.json   PWA manifest named "In Zicht"
   core/css/server.css      ALL styles in one file — tokens, fonts, components,
                            motion, login (single-file on purpose; see "Caching")
   core/fonts/*.woff2       self-hosted Inter + Space Grotesk (no CDN, CSP-safe)
@@ -169,5 +175,11 @@ show without a manual hard-refresh. Keep it single-file; don't re-introduce
 - Fonts are self-hosted inside the theme (no external CDN), so they work under a
   strict Content-Security-Policy.
 - High-contrast accessibility themes are intentionally left un-recolored.
-- `defaults.php` is intentionally empty: the theme changes the *look* only, not the
-  Nextcloud product name, footer, or documentation links.
+- `defaults.php` carries the full product identity (name, browser title, entity,
+  slogan, product name, base/client URLs) so the rebrand is git-tracked and
+  survives DB reseeds. Documentation links are deliberately NOT overridden and
+  still point at docs.nextcloud.com. Keep the Theming app's TEXT fields empty:
+  appconfig wins over these theme values.
+- The favicon set in `core/img/` is picked up by Nextcloud's URLGenerator ahead
+  of core's own icons. If a stale stock favicon persists after deploying, flush
+  the Redis cache (the resolved image path is cached without a cache-buster).
