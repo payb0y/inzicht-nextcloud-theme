@@ -2,9 +2,10 @@
 /**
  * In Zicht override of apps/settings/templates/help.php.
  *
- * Identical to stock except the "Forum" buttons/links to help.nextcloud.com
- * are removed (both the embedded-knowledgebase sidebar variant and the plain
- * button variant). Documentation links are kept per the whitelabel decision.
+ * Identical to stock except every button that leads to a Nextcloud property
+ * is removed: the "Forum" links (help.nextcloud.com) and all documentation
+ * buttons (docs.nextcloud.com, urlUserDocs/urlAdminDocs). Only the heading and
+ * the legal-notice / privacy-policy buttons (when configured) remain.
  * The page is unreachable from the UI while knowledgebaseenabled=false, but
  * still answers on direct URL — hence the override. RE-SYNC against the stock
  * template after every Nextcloud upgrade.
@@ -13,41 +14,6 @@
 ?>
 <?php if ($_['knowledgebaseEmbedded'] === true) : ?>
 	<div id="app-navigation" role="navigation" tabindex="0">
-		<ul>
-			<li>
-				<a class="help-list__link icon-user <?php if ($_['mode'] === 'user') {
-					p('active');
-				} ?>" <?php if ($_['mode'] === 'user') {
-					print_unescaped('aria-current="page"');
-				} ?>
-					href="<?php print_unescaped($_['urlUserDocs']); ?>">
-					<span class="help-list__text">
-						<?php p($l->t('Account documentation')); ?>
-					</span>
-				</a>
-			</li>
-		<?php if ($_['admin']) { ?>
-			<li>
-				<a class="help-list__link icon-user-admin <?php if ($_['mode'] === 'admin') {
-					p('active');
-				} ?>" <?php if ($_['mode'] === 'admin') {
-					print_unescaped('aria-current="page"');
-				} ?>
-					href="<?php print_unescaped($_['urlAdminDocs']); ?>">
-					<span class="help-list__text">
-						<?php p($l->t('Administration documentation')); ?>
-					</span>
-				</a>
-			</li>
-		<?php } ?>
-
-			<li>
-				<a href="https://docs.nextcloud.com" class="help-list__link icon-category-office" target="_blank" rel="noreferrer noopener">
-					<span class="help-list__text">
-						<?php p($l->t('Documentation')); ?> ↗
-					</span>
-				</a>
-			</li>
 	</div>
 
 	<div id="app-content" class="help-includes">
@@ -62,17 +28,6 @@
 					<?php p($l->t('Nextcloud help & privacy resources')); ?>
 				</h2>
 				<div class="help-content__body">
-				<a class="button" target="_blank" rel="noreferrer noopener"
-					href="<?php print_unescaped($_['urlUserDocs']); ?>">
-					<?php p($l->t('Account documentation')); ?>  ↗
-				</a>
-				<a class="button" target="_blank" rel="noreferrer noopener"
-					href="<?php print_unescaped($_['urlAdminDocs']); ?>">
-					<?php p($l->t('Administration documentation')); ?>  ↗
-				</a>
-				<a href="https://docs.nextcloud.com" class="button" target="_blank" rel="noreferrer noopener">
-					<?php p($l->t('General documentation')); ?> ↗
-				</a>
 				<?php if ($_['legalNoticeUrl']) { ?>
 					<a href="<?php print_unescaped($_['legalNoticeUrl']); ?>" class="button" target="_blank" rel="noreferrer noopener">
 						<?php p($l->t('Legal notice')); ?> ↗
