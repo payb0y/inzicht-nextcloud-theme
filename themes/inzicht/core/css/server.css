@@ -438,6 +438,18 @@ body {
 	--iz-cat-4-bg: color-mix(in oklab, var(--iz-cat-4) 18%, var(--color-main-background, #fff));
 	--iz-cat-5-bg: color-mix(in oklab, var(--iz-cat-5) 16%, var(--color-main-background, #fff));
 
+	/* — sequential ramp: ONE hue, lightness 0.78 → 0.42 —
+	   For ORDERED data only: completion bands, severity steps, any scale where
+	   step 4 means "more" than step 1. Not interchangeable with --iz-cat-*.
+	   The categorical hues cannot do this job: red↔amber scores ΔE 4.9 for
+	   deuteranopia and 14.7 even for normal vision (floor is 15), so a
+	   red-amber-accent-green progress donut is unreadable as areas. A single
+	   hue separated by lightness has nothing to confuse. */
+	--iz-seq-1: oklch(0.78 0.09 330);
+	--iz-seq-2: oklch(0.68 0.14 330);
+	--iz-seq-3: oklch(0.57 0.19 330);
+	--iz-seq-4: oklch(0.42 0.15 330);
+
 	/* — radii (mapped to the NC/newstyle scale from section 3) — */
 	--iz-radius-sm: var(--border-radius-small, 6px);
 	--iz-radius: var(--border-radius-element, 8px);
@@ -504,6 +516,10 @@ body {
 	--iz-cat-3-text: oklch(0.80 0.11 180);
 	--iz-cat-4-text: oklch(0.82 0.13 70);
 	--iz-cat-5-text: oklch(0.78 0.14 300);
+	--iz-seq-1: oklch(0.42 0.10 330);
+	--iz-seq-2: oklch(0.55 0.16 330);
+	--iz-seq-3: oklch(0.68 0.19 330);
+	--iz-seq-4: oklch(0.82 0.12 330);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -520,6 +536,10 @@ body {
 		--iz-cat-3-text: oklch(0.80 0.11 180);
 		--iz-cat-4-text: oklch(0.82 0.13 70);
 		--iz-cat-5-text: oklch(0.78 0.14 300);
+		--iz-seq-1: oklch(0.42 0.10 330);
+		--iz-seq-2: oklch(0.55 0.16 330);
+		--iz-seq-3: oklch(0.68 0.19 330);
+		--iz-seq-4: oklch(0.82 0.12 330);
 	}
 }
 
@@ -598,6 +618,12 @@ body {
 	--chart-4: var(--iz-cat-4);
 	--chart-5: var(--iz-cat-5);
 	--chart-5-bg: var(--iz-cat-5-bg);
+
+	/* sequential ramp — ordered scales only, see --iz-seq-* above */
+	--seq-1: var(--iz-seq-1);
+	--seq-2: var(--iz-seq-2);
+	--seq-3: var(--iz-seq-3);
+	--seq-4: var(--iz-seq-4);
 
 	/* spacing — the apps' own scale, kept because their layout rules use it */
 	--spacing-xs: 4px;
