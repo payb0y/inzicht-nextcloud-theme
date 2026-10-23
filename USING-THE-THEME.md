@@ -187,6 +187,17 @@ vendored into each app and **must be updated everywhere in the same change**:
   inverts correctly — Chart.js defaults the label to white, which disappears
   against the light box on the dark scheme. Vendor it only into apps that
   actually draw on a canvas; an unused copy is the one that goes stale.
+- **`src/components/ProjectTimeline.vue` + `src/lib/projectTimeline.mjs`**
+  (with `tests/projectTimeline.test.mjs`) — a project's timeline as
+  projectcreatoraio plans it: the Overview's timeline figures over the Planning
+  tab's Gantt, read-only. Not from the theme: the canonical copy is
+  `adminpage`'s, and `superadminpage` and `employee_dashboard` carry identical
+  copies. Edit adminpage's, run its tests, copy all three files. Its Gantt is
+  kept identical to projectcreatoraio's Planning tab, so it carries that tab's
+  palette as one block of local custom properties (`.ptl__planner`) — a
+  deliberate exception, since the theme has no tokens for it. Phase and item
+  colours are projectcreatoraio data and only reach CSS through a plain-hex
+  check; surfaces, borders and text are tokens.
 
 ---
 
